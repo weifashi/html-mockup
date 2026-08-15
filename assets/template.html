@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{功能名} — 原型</title>
+<style>
+/* ============ tokens ============ */
+:root{
+  --amber:#f59e0b;   /* 主操作 */
+  --orange:#ea580c;  /* 编号·强调 */
+  --green:#16a34a;   /* 本次新增·修改 */
+  --red:#dc2626;     /* 警告·失败·破坏性 */
+  --ink:#1f2937; --ink2:#4b5563; --mut:#6b7280; --mut2:#9ca3af;
+  --line:#e5e7eb; --line2:#d1d5db; --bg:#f3f4f6; --card:#fff;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:0 0 60px;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+.wrap.desk{max-width:1180px}
+a{color:var(--orange)}
+
+/* ============ 页头 ============ */
+.hd{background:#fff;border-bottom:3px solid var(--amber);padding:22px 0 18px;margin-bottom:18px}
+.hd h1{margin:0 0 6px;font-size:22px;letter-spacing:.3px}
+.hd .sub{color:var(--mut);font-size:13px}
+.hd .date{color:var(--mut2);font-size:12px;margin-top:6px;font-family:var(--mono)}
+
+/* ============ sticky 锚点导航(界面>3 个必加) ============ */
+.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line);padding:8px 0;margin-bottom:18px;overflow-x:auto;white-space:nowrap}
+.nav a{display:inline-block;padding:4px 11px;margin-right:6px;border:1px solid var(--line2);border-radius:14px;
+  font-size:12px;color:var(--ink2);text-decoration:none;background:#fff}
+.nav a:hover{border-color:var(--amber);color:var(--orange)}
+
+/* ============ 本次更新绿框(第二版起必加) ============ */
+.upd{background:#f0fdf4;border:1px solid var(--green);border-left:4px solid var(--green);
+  border-radius:6px;padding:12px 16px;margin-bottom:20px}
+.upd h3{margin:0 0 8px;font-size:14px;color:#15803d}
+.upd ol{margin:0;padding-left:20px}
+.upd li{margin:3px 0;font-size:13px}
+.upd a{color:#15803d}
+
+/* ============ 分节 ============ */
+.st{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin-bottom:18px}
+.st-h{margin:0 0 4px;font-size:16px;display:flex;align-items:baseline;gap:8px}
+.st-h .n{color:var(--orange);font-family:var(--mono);font-weight:700}
+.st-h small{font-weight:400;color:var(--mut2);font-size:12px}
+.lead{color:var(--ink2);font-size:13px;margin:6px 0 14px}
+
+/* ============ 说明块(规则写这里,别塞进界面) ============ */
+.hint{background:#fffbeb;border-left:3px solid var(--amber);border-radius:0 4px 4px 0;
+  padding:10px 14px;margin:12px 0;font-size:13px;color:#78350f}
+.hint b{color:#92400e}
+.hint ul{margin:6px 0 0;padding-left:18px}
+.warn{background:#fef2f2;border-left-color:var(--red);color:#7f1d1d}
+.ok{background:#f0fdf4;border-left-color:var(--green);color:#14532d}
+
+/* ============ 新旧标注 ============ */
+.tag-new{display:inline-block;background:var(--green);color:#fff;font-size:10px;padding:1px 6px;
+  border-radius:3px;margin-left:6px;vertical-align:middle;letter-spacing:.5px}
+.newf{border:1px dashed var(--green)!important;background:#f0fdf4!important;position:relative}
+.old{color:var(--red);text-decoration:line-through}
+
+/* ============ 手机弹窗帧 ============ */
+.phone{width:320px;margin:14px auto;border:1px solid var(--line2);border-radius:14px;background:#fff;
+  box-shadow:0 4px 18px rgba(0,0,0,.08);overflow:hidden}
+.phone .bar{background:#fafafa;border-bottom:1px solid var(--line);padding:10px 14px;
+  font-size:14px;font-weight:600;text-align:center;position:relative}
+.phone .bar .x{position:absolute;right:12px;top:9px;color:var(--mut2);font-weight:400}
+.phone .body{padding:14px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
+.row:last-child{border-bottom:none}
+.row .k{color:var(--mut)}
+.row .v{font-weight:600;font-variant-numeric:tabular-nums}
+.btn{display:block;width:100%;background:var(--amber);color:#fff;border:none;border-radius:6px;
+  padding:11px;font-size:14px;font-weight:600;text-align:center;margin-top:12px}
+.btn.sec{background:#fff;color:var(--ink2);border:1px solid var(--line2)}
+.btn.danger{background:var(--red)}
+.inp{border:1px solid var(--line2);border-radius:5px;padding:8px 10px;font-size:13px;color:var(--mut2);background:#fff}
+
+/* ============ 状态流转图 ============ */
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0}
+.flow .n{border:1px solid var(--line2);border-radius:6px;padding:7px 13px;background:#fff;font-size:13px;white-space:nowrap}
+.flow .n.hit{border-color:var(--green);background:#f0fdf4;color:#15803d;font-weight:600}
+.flow .n.bad{border-color:var(--red);background:#fef2f2;color:#991b1b}
+.flow .ar{color:var(--mut2);font-size:16px}
+.flow .lb{font-size:11px;color:var(--mut);align-self:center}
+
+/* ============ 简单对比表 ============ */
+.cmp{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.cmp th,.cmp td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+.cmp th{background:#f9fafb;font-weight:600;color:var(--ink2)}
+.cmp td.n{font-variant-numeric:tabular-nums;font-family:var(--mono)}
+.cmp tr.hit td{background:#f0fdf4}
+
+/* ============ K. ASCII 面板(框内只放半角!中文放框外) ============ */
+pre.ascii{background:#f8fafc;border:1px solid var(--line);border-radius:6px;padding:14px 16px;
+  font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#334155;overflow-x:auto;margin:12px 0;
+  -moz-tab-size:2;tab-size:2}
+
+/* ============ L. mermaid 黑底卡(全篇唯一黑底) ============ */
+.mmd{background:#0b0f14;border:1px solid #1e293b;border-radius:8px;padding:14px 16px;margin:14px 0;overflow-x:auto}
+.mmd .cap{color:#94a3b8;font-size:11px;font-family:var(--mono);margin-bottom:8px;letter-spacing:.5px}
+.mmd pre{margin:0;color:#e5e7eb;font-family:var(--mono);font-size:12.5px;line-height:1.6;white-space:pre}
+.mmd .kw{color:#7dd3fc}    /* 关键字 */
+
+/* mermaid-svg —— render-mermaid.py 会注入/更新这段,别手改 */
+.mmd{position:relative}
+.mmd svg{height:auto;display:block;margin:0 auto}
+.mmd.fit svg{width:100%}
+.mmd.wide svg{width:auto;max-width:none}
+.mmd.wide:after{content:"\2190 \2192 \0020 \6b64 \56fe \8f83 \5bbd \ff0c \53ef \5de6 \53f3 \6ed1 \52a8";
+ display:block;color:#64748b;font-size:10.5px;font-family:var(--mono,monospace);
+ margin-top:6px;text-align:right;position:sticky;left:0}
+.mmd details{margin-top:9px;position:sticky;left:0}
+.mmd details summary{color:#94a3b8;font-size:11px;cursor:pointer;font-family:var(--mono,monospace);
+ list-style:none;user-select:none;padding:2px 0}
+.mmd details summary::-webkit-details-marker{display:none}
+.mmd details summary:before{content:"\25b8 ";color:#64748b}
+.mmd details[open] summary:before{content:"\25be "}
+.mmd details pre{margin-top:6px;max-height:340px;overflow:auto;white-space:pre-wrap;word-break:break-word;
+ font-size:11px;opacity:.85}
+.mmd .nw{color:#4ade80}    /* 本次新增 */
+.mmd .rm{color:#f87171}    /* 本次删除 */
+
+/* ============ J. 规则卡(模式 B 核心) ============ */
+.rule{border:1px solid var(--line);border-left:4px solid var(--orange);border-radius:0 6px 6px 0;
+  background:#fff;padding:14px 16px;margin:14px 0}
+.rule h4{margin:0 0 10px;font-size:14px}
+.rule h4 .id{font-family:var(--mono);color:var(--orange);margin-right:8px}
+.rule .kv{display:grid;grid-template-columns:76px 1fr;gap:6px 12px;font-size:13px}
+.rule .kv dt{color:var(--mut);font-size:12px;padding-top:2px}
+.rule .kv dd{margin:0}
+.rule .was{background:#f9fafb;border:1px solid var(--line);border-radius:4px;padding:6px 9px;
+  font-family:var(--mono);font-size:12px;color:var(--mut)}
+.rule .now{background:#f0fdf4;border:1px solid var(--green);border-radius:4px;padding:6px 9px;
+  font-family:var(--mono);font-size:12px;color:#14532d}
+.rule .risk-h{color:var(--red);font-weight:600}
+.rule .risk-m{color:var(--amber);font-weight:600}
+.rule .risk-l{color:var(--mut)}
+
+/* ============ M. 数字条 ============ */
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.stats .s{flex:1;min-width:110px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.stats .s .v{font-size:22px;font-weight:700;font-family:var(--mono);font-variant-numeric:tabular-nums;line-height:1.2}
+.stats .s .l{font-size:11px;color:var(--mut);margin-top:2px}
+.stats .s.g .v{color:var(--green)} .stats .s.r .v{color:var(--red)} .stats .s.o .v{color:var(--orange)}
+
+.foot{text-align:center;color:var(--mut2);font-size:12px;padding:24px 0}
+@media(max-width:640px){.wrap{padding:0 10px}.phone{width:100%}}
+</style>
+</head>
+<body>
+
+<div class="hd"><div class="wrap">
+  <h1>{功能名}</h1>
+  <div class="sub">一句话说清这一版讲什么。</div>
+  <div class="date">2026-08-13 · v1</div>
+</div></div>
+
+<div class="nav"><div class="wrap">
+  <a href="#s1">① 入口</a>
+  <a href="#s2">② 主界面</a>
+  <a href="#s3">③ 规则</a>
+  <a href="#s4">④ 流转</a>
+</div></div>
+
+<div class="wrap">
+
+  <!-- 第二版起必加 -->
+  <div class="upd">
+    <h3>本次更新 2 条</h3>
+    <ol>
+      <li><a href="#s2">主界面加了 xx 字段</a></li>
+      <li><a href="#s3">xx 规则从 A 改成 B</a></li>
+    </ol>
+  </div>
+
+  <div class="st" id="s1">
+    <h3 class="st-h"><span class="n">①</span> 入口 <small>门店后台 › 库存 › 盘点</small></h3>
+    <div class="lead">复杂的节再加一句副标题定调。</div>
+
+    <div class="phone">
+      <div class="bar">确认盘点<span class="x">✕</span></div>
+      <div class="body">
+        <div class="row"><span class="k">物品数量</span><span class="v">128</span></div>
+        <div class="row"><span class="k">差异金额</span><span class="v">-1,240.00</span></div>
+        <div class="row newf"><span class="k">生效时间<span class="tag-new">新增</span></span><span class="v">2026-08-13 18:00</span></div>
+        <button class="btn">确认提交</button>
+        <button class="btn sec">取消</button>
+      </div>
+    </div>
+
+    <div class="hint"><b>规则:</b>生效时间只能选今天 00:00 之后、当前时间之前;超出范围按钮置灰。</div>
+  </div>
+
+  <div class="st" id="s4">
+    <h3 class="st-h"><span class="n">④</span> 状态流转</h3>
+    <div class="flow">
+      <span class="n">草稿</span><span class="ar">→</span>
+      <span class="n">待审核</span><span class="ar">→</span>
+      <span class="n hit">已生效<span class="tag-new">新增</span></span><span class="ar">→</span>
+      <span class="n bad">已作废</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">原型 · 静态展示 · 非可交互</div>
+</body>
+</html>

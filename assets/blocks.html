@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>积木库 — html-mockup</title>
+<style>
+:root{--amber:#f59e0b;--orange:#ea580c;--green:#16a34a;--red:#dc2626;
+--ink:#1f2937;--ink2:#4b5563;--mut:#6b7280;--mut2:#9ca3af;
+--line:#e5e7eb;--line2:#d1d5db;--bg:#f3f4f6;--card:#fff;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;padding:0 0 60px;background:var(--bg);color:var(--ink);
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.65}
+.wrap{max-width:1000px;margin:0 auto;padding:0 16px}
+a{color:var(--orange)}
+.hd{background:#fff;border-bottom:3px solid var(--amber);padding:22px 0 18px;margin-bottom:18px}
+.hd h1{margin:0 0 6px;font-size:22px}
+.hd .sub{color:var(--mut);font-size:13px}
+.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);
+padding:8px 0;margin-bottom:18px;overflow-x:auto;white-space:nowrap}
+.nav a{display:inline-block;padding:4px 10px;margin-right:5px;border:1px solid var(--line2);border-radius:14px;
+font-size:12px;color:var(--ink2);text-decoration:none;background:#fff}
+.st{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin-bottom:18px}
+.st-h{margin:0 0 4px;font-size:16px}
+.st-h .n{color:var(--orange);font-family:var(--mono);font-weight:700;margin-right:8px}
+.st-h small{font-weight:400;color:var(--mut2);font-size:12px;margin-left:8px}
+.lead{color:var(--ink2);font-size:13px;margin:6px 0 14px}
+.use{background:#eff6ff;border-left:3px solid #3b82f6;padding:8px 12px;margin:10px 0 14px;font-size:12.5px;color:#1e3a8a}
+.hint{background:#fffbeb;border-left:3px solid var(--amber);padding:10px 14px;margin:12px 0;font-size:13px;color:#78350f}
+.tag-new{display:inline-block;background:var(--green);color:#fff;font-size:10px;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}
+.newf{border:1px dashed var(--green)!important;background:#f0fdf4!important}
+.old{color:var(--red);text-decoration:line-through}
+.foot{text-align:center;color:var(--mut2);font-size:12px;padding:24px 0}
+
+/* A 桌面后台外壳 */
+.shell{border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:#fff;margin:12px 0}
+.shell .top{background:var(--amber);color:#fff;padding:9px 14px;font-size:13px;font-weight:600;display:flex;justify-content:space-between}
+.shell .bd{display:flex;min-height:220px}
+.shell .side{width:150px;background:#fafafa;border-right:1px solid var(--line);padding:8px 0;font-size:12.5px}
+.shell .side div{padding:7px 14px;color:var(--ink2)}
+.shell .side div.on{background:#fff7ed;color:var(--orange);font-weight:600;border-left:3px solid var(--amber)}
+.shell .main{flex:1;padding:14px}
+
+/* B 业务列表页 —— 表格类名用 .dt,不要用 .tb */
+.filt{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.filt .f{border:1px solid var(--line2);border-radius:5px;padding:5px 10px;font-size:12px;color:var(--mut);background:#fff}
+.filt .f.go{background:var(--amber);color:#fff;border-color:var(--amber)}
+.dt{width:100%;border-collapse:collapse;font-size:12.5px}
+.dt th,.dt td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left}
+.dt th{background:#f9fafb;color:var(--mut);font-weight:600;white-space:nowrap}
+.dt td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.dt .act{color:var(--orange);font-size:12px}
+.pill{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;border:1px solid}
+.pill.ok{color:#15803d;border-color:#86efac;background:#f0fdf4}
+.pill.wait{color:#92400e;border-color:#fcd34d;background:#fffbeb}
+.pill.no{color:#991b1b;border-color:#fca5a5;background:#fef2f2}
+
+/* C 小票纸卷 —— 小计类名用 .amt,不要用 .st */
+.rcpt{width:270px;margin:12px auto;background:#fff;border:1px solid var(--line);padding:16px 18px;
+font-family:var(--mono);font-size:12px;line-height:1.75;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.rcpt .c{text-align:center}
+.rcpt .sep{border-top:1px dashed var(--line2);margin:8px 0}
+.rcpt .amt{display:flex;justify-content:space-between}
+.rcpt .amt.big{font-weight:700;font-size:13px}
+
+/* D 操作轨迹时间线 */
+.tl{border-left:2px solid var(--line2);margin:12px 0 12px 8px;padding-left:16px}
+.tl .it{position:relative;padding:0 0 14px}
+.tl .it:before{content:"";position:absolute;left:-23px;top:5px;width:9px;height:9px;border-radius:50%;
+background:#fff;border:2px solid var(--line2)}
+.tl .it.on:before{border-color:var(--green);background:var(--green)}
+.tl .t{font-family:var(--mono);font-size:11px;color:var(--mut2)}
+.tl .w{font-size:13px}
+.tl .w b{color:var(--ink)}
+.tl .d{font-size:12px;color:var(--mut)}
+
+/* E 判定矩阵表 —— 说明列类名用 .rmk,不要用 .note */
+.mx{width:100%;border-collapse:collapse;font-size:12.5px;margin:12px 0}
+.mx th,.mx td{border:1px solid var(--line);padding:6px 9px;text-align:center}
+.mx th{background:#f9fafb;color:var(--ink2)}
+.mx td:first-child{text-align:left;background:#fafafa;font-weight:600}
+.mx .y{color:var(--green);font-weight:700}
+.mx .n2{color:var(--mut2)}
+.mx .q{color:var(--red);font-weight:700}
+.mx .rmk{text-align:left;color:var(--mut);font-size:11.5px}
+
+/* F 并排双栏对照 */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+.cols .col{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.cols .col .ch{padding:6px 11px;font-size:12px;font-weight:600;background:#f9fafb;border-bottom:1px solid var(--line);color:var(--mut)}
+.cols .col.new .ch{background:#f0fdf4;color:#15803d}
+.cols .col .cb{padding:12px}
+@media(max-width:700px){.cols{grid-template-columns:1fr}}
+
+/* G 三色要点卡网格 */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:12px 0}
+.cards .c{border:1px solid var(--line);border-left:4px solid var(--mut2);border-radius:0 6px 6px 0;padding:10px 12px;background:#fff}
+.cards .c.g{border-left-color:var(--green);background:#f0fdf4}
+.cards .c.a{border-left-color:var(--amber);background:#fffbeb}
+.cards .c.r{border-left-color:var(--red);background:#fef2f2}
+.cards .c h5{margin:0 0 4px;font-size:13px}
+.cards .c p{margin:0;font-size:12px;color:var(--ink2)}
+
+/* H 旧→新差异清单 */
+.diffl{border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:12px 0}
+.diffl .r{display:grid;grid-template-columns:1fr 90px 110px 110px;gap:0;font-size:12.5px;border-bottom:1px solid var(--line)}
+.diffl .r:last-child{border-bottom:none}
+.diffl .r.h{background:#f9fafb;color:var(--mut);font-weight:600}
+.diffl .r>div{padding:7px 10px}
+.diffl .r>div:not(:first-child){text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.diffl .r.tot{background:#fffbeb;font-weight:700}
+.diffl .up{color:var(--red)} .diffl .dn{color:var(--green)}
+
+/* J 规则卡 */
+.rule{border:1px solid var(--line);border-left:4px solid var(--orange);border-radius:0 6px 6px 0;background:#fff;padding:14px 16px;margin:14px 0}
+.rule h4{margin:0 0 10px;font-size:14px}
+.rule h4 .id{font-family:var(--mono);color:var(--orange);margin-right:8px}
+.rule .kv{display:grid;grid-template-columns:76px 1fr;gap:6px 12px;font-size:13px}
+.rule .kv dt{color:var(--mut);font-size:12px;padding-top:2px}
+.rule .kv dd{margin:0}
+.rule .was{background:#f9fafb;border:1px solid var(--line);border-radius:4px;padding:6px 9px;font-family:var(--mono);font-size:12px;color:var(--mut)}
+.rule .now{background:#f0fdf4;border:1px solid var(--green);border-radius:4px;padding:6px 9px;font-family:var(--mono);font-size:12px;color:#14532d}
+.rule .risk-h{color:var(--red);font-weight:600}
+
+/* K ASCII 面板 */
+pre.ascii{background:#f8fafc;border:1px solid var(--line);border-radius:6px;padding:14px 16px;
+font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#334155;overflow-x:auto;margin:12px 0}
+
+/* L mermaid 黑底卡 —— 全篇唯一黑底 */
+.mmd{background:#0b0f14;border:1px solid #1e293b;border-radius:8px;padding:14px 16px;margin:14px 0;overflow-x:auto}
+.mmd .cap{color:#94a3b8;font-size:11px;font-family:var(--mono);margin-bottom:8px}
+.mmd pre{margin:0;color:#e5e7eb;font-family:var(--mono);font-size:12.5px;line-height:1.6;white-space:pre}
+.mmd .kw{color:#7dd3fc} .mmd .nw{color:#4ade80} .mmd .rm{color:#f87171}
+
+/* mermaid-svg —— render-mermaid.py 会注入/更新这段,别手改 */
+.mmd{position:relative}
+.mmd svg{height:auto;display:block;margin:0 auto}
+.mmd.fit svg{width:100%}
+.mmd.wide svg{width:auto;max-width:none}
+.mmd.wide:after{content:"\2190 \2192 \0020 \6b64 \56fe \8f83 \5bbd \ff0c \53ef \5de6 \53f3 \6ed1 \52a8";
+ display:block;color:#64748b;font-size:10.5px;font-family:var(--mono,monospace);
+ margin-top:6px;text-align:right;position:sticky;left:0}
+.mmd details{margin-top:9px;position:sticky;left:0}
+.mmd details summary{color:#94a3b8;font-size:11px;cursor:pointer;font-family:var(--mono,monospace);
+ list-style:none;user-select:none;padding:2px 0}
+.mmd details summary::-webkit-details-marker{display:none}
+.mmd details summary:before{content:"\25b8 ";color:#64748b}
+.mmd details[open] summary:before{content:"\25be "}
+.mmd details pre{margin-top:6px;max-height:340px;overflow:auto;white-space:pre-wrap;word-break:break-word;
+ font-size:11px;opacity:.85}
+
+/* M 数字条 */
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.stats .s{flex:1;min-width:110px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.stats .s .v{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1.2}
+.stats .s .l{font-size:11px;color:var(--mut);margin-top:2px}
+.stats .s.g .v{color:var(--green)} .stats .s.r .v{color:var(--red)} .stats .s.o .v{color:var(--orange)}
+
+/* 手机弹窗帧 */
+.phone{width:300px;margin:12px auto;border:1px solid var(--line2);border-radius:14px;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.08);overflow:hidden}
+.phone .bar{background:#fafafa;border-bottom:1px solid var(--line);padding:10px 14px;font-size:14px;font-weight:600;text-align:center;position:relative}
+.phone .bar .x{position:absolute;right:12px;top:9px;color:var(--mut2);font-weight:400}
+.phone .body{padding:14px}
+.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
+.row:last-child{border-bottom:none}
+.row .k{color:var(--mut)}
+.row .v{font-weight:600;font-variant-numeric:tabular-nums}
+.btn{display:block;width:100%;background:var(--amber);color:#fff;border:none;border-radius:6px;padding:11px;font-size:14px;font-weight:600;text-align:center;margin-top:12px}
+.btn.sec{background:#fff;color:var(--ink2);border:1px solid var(--line2)}
+/* 状态流转图 */
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0}
+.flow .n{border:1px solid var(--line2);border-radius:6px;padding:7px 13px;background:#fff;font-size:13px}
+.flow .n.hit{border-color:var(--green);background:#f0fdf4;color:#15803d;font-weight:600}
+.flow .n.bad{border-color:var(--red);background:#fef2f2;color:#991b1b}
+.flow .ar{color:var(--mut2)}
+/* 简单对比表 */
+.cmp{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.cmp th,.cmp td{border:1px solid var(--line);padding:8px 11px;text-align:left}
+.cmp th{background:#f9fafb;color:var(--ink2)}
+.cmp td.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<div class="hd"><div class="wrap">
+  <h1>积木库</h1>
+  <div class="sub">先按「要表达什么」选积木,别一上来就画界面。右键查看源码直接抄。</div>
+</div></div>
+
+<div class="nav"><div class="wrap">
+  <a href="#a">A 后台外壳</a><a href="#b">B 列表页</a><a href="#c">C 小票</a><a href="#d">D 时间线</a>
+  <a href="#e">E 矩阵表</a><a href="#f">F 双栏对照</a><a href="#g">G 要点卡</a><a href="#h">H 差异清单</a>
+  <a href="#i">I 新旧标注</a><a href="#j">J 规则卡</a><a href="#k">K ASCII</a><a href="#l">L mermaid</a>
+  <a href="#m">M 数字条</a><a href="#x">X 基础件</a>
+</div></div>
+
+<div class="wrap">
+
+<div class="st" id="a">
+  <h3 class="st-h"><span class="n">A</span>桌面后台外壳<small>.shell</small></h3>
+  <div class="use">用于:说清这功能挂在哪个端、哪个菜单、谁看得到。shop 后台页必须用它,不要拿手机窄卡片凑。</div>
+  <div class="shell">
+    <div class="top"><span>某某门店后台</span><span>xx 门店 ▾</span></div>
+    <div class="bd">
+      <div class="side"><div>营业概况</div><div>订单管理</div><div class="on">库存 › 盘点</div><div>物品管理</div><div>报表</div></div>
+      <div class="main">
+        <div class="filt"><span class="f">盘点日期 ▾</span><span class="f">状态:全部 ▾</span><span class="f go">查询</span></div>
+        <table class="dt"><tr><th>单号</th><th>门店</th><th class="n">差异金额</th><th>状态</th><th>操作</th></tr>
+        <tr><td>PD20260813001</td><td>望京店</td><td class="n">-1,240.00</td><td><span class="pill ok">已生效</span></td><td class="act">查看</td></tr></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="st" id="b">
+  <h3 class="st-h"><span class="n">B</span>业务列表页<small>.dt(不要写 .tb)</small></h3>
+  <div class="use">用于:一批数据在哪看、怎么筛、每行能干什么。</div>
+  <div class="filt"><span class="f">日期:近 7 天 ▾</span><span class="f">类型:全部 ▾</span><span class="f">关键词</span><span class="f go">查询</span></div>
+  <table class="dt">
+    <tr><th>单号</th><th>类型</th><th>创建人</th><th class="n">金额</th><th>状态</th><th>操作</th></tr>
+    <tr><td>CG20260813007</td><td>外部采购</td><td>张三</td><td class="n">12,400.00</td><td><span class="pill wait">待审核</span></td><td class="act">审核 · 作废</td></tr>
+    <tr class="newf"><td>PP20260813002</td><td>品牌采购<span class="tag-new">新增</span></td><td>李四</td><td class="n">8,600.00</td><td><span class="pill ok">已完成</span></td><td class="act">查看</td></tr>
+    <tr><td>DB20260812011</td><td>调拨</td><td>王五</td><td class="n">2,150.00</td><td><span class="pill no">已作废</span></td><td class="act">查看</td></tr>
+  </table>
+</div>
+
+<div class="st" id="c">
+  <h3 class="st-h"><span class="n">C</span>小票纸卷<small>.rcpt / .amt(不要写 .st)</small></h3>
+  <div class="use">用于:票据 / 小票印出来什么样。</div>
+  <div class="rcpt">
+    <div class="c"><b>望京店</b></div>
+    <div class="c">销售小票</div>
+    <div class="sep"></div>
+    <div class="amt"><span>牛肉面 x2</span><span>56.00</span></div>
+    <div class="amt"><span>可乐 x1</span><span>8.00</span></div>
+    <div class="sep"></div>
+    <div class="amt"><span>小计</span><span>64.00</span></div>
+    <div class="amt"><span>券抵扣</span><span>-10.00</span></div>
+    <div class="amt big"><span>实收</span><span>54.00</span></div>
+    <div class="sep"></div>
+    <div class="c">2026-08-13 12:34 · 收银 001</div>
+  </div>
+</div>
+
+<div class="st" id="d">
+  <h3 class="st-h"><span class="n">D</span>操作轨迹时间线<small>.tl</small></h3>
+  <div class="use">用于:一条单据实际走过的路,谁几点做了什么。查问题、讲状态机时最有效。</div>
+  <div class="tl">
+    <div class="it on"><div class="t">08-13 09:12</div><div class="w"><b>张三</b> 创建盘点单</div><div class="d">128 个物品,系统数与实盘数差 6 项</div></div>
+    <div class="it on"><div class="t">08-13 09:40</div><div class="w"><b>李四</b> 提交审核</div></div>
+    <div class="it"><div class="t">08-13 10:02</div><div class="w"><b>王五</b> 审核通过,单据生效</div><div class="d">按生效时间 09:00 回写库存</div></div>
+  </div>
+</div>
+
+<div class="st" id="e">
+  <h3 class="st-h"><span class="n">E</span>判定矩阵表<small>.mx / .rmk(不要写 .note)</small></h3>
+  <div class="use">用于:这次做什么不做什么、我们有什么缺什么。一眼看出哪格是空的。</div>
+  <table class="mx">
+    <tr><th>场景</th><th>POS</th><th>Shop</th><th>顾客 H5</th><th class="rmk">说明</th></tr>
+    <tr><td>外部采购</td><td class="y">✓</td><td class="y">✓</td><td class="n2">—</td><td class="rmk">已有</td></tr>
+    <tr><td>品牌采购</td><td class="n2">—</td><td class="y">✓</td><td class="n2">—</td><td class="rmk">本次新增,只在后台</td></tr>
+    <tr><td>调拨</td><td class="q">?</td><td class="y">✓</td><td class="n2">—</td><td class="rmk">POS 端待定,需 PM 拍板</td></tr>
+  </table>
+</div>
+
+<div class="st" id="f">
+  <h3 class="st-h"><span class="n">F</span>并排双栏对照<small>.cols</small></h3>
+  <div class="use">用于:改动落在真实界面的哪个位置(其余不动)。改前 / 改后各一栏。</div>
+  <div class="cols">
+    <div class="col"><div class="ch">改前</div><div class="cb">
+      <div class="row"><span class="k">合计</span><span class="v">64.00</span></div>
+      <div class="row"><span class="k">实收</span><span class="v">64.00</span></div>
+    </div></div>
+    <div class="col new"><div class="ch">改后</div><div class="cb">
+      <div class="row"><span class="k">合计</span><span class="v">64.00</span></div>
+      <div class="row newf"><span class="k">券抵扣<span class="tag-new">新增</span></span><span class="v">-10.00</span></div>
+      <div class="row"><span class="k">实收</span><span class="v">54.00</span></div>
+    </div></div>
+  </div>
+</div>
+
+<div class="st" id="g">
+  <h3 class="st-h"><span class="n">G</span>三色要点卡网格<small>.cards</small></h3>
+  <div class="use">用于:一张界面图讲不完的 4~6 条后果。绿=新增能力,黄=注意,红=风险。</div>
+  <div class="cards">
+    <div class="c g"><h5>顾客能用券了</h5><p>结算页多一行券抵扣,实收自动减。</p></div>
+    <div class="c a"><h5>小票要重排</h5><p>多一行,58mm 纸宽度要复核。</p></div>
+    <div class="c r"><h5>历史订单不回溯</h5><p>上线前的订单不显示券行,报表口径要区分。</p></div>
+    <div class="c"><h5>报表新增一列</h5><p>日结增加「券抵扣合计」。</p></div>
+  </div>
+</div>
+
+<div class="st" id="h">
+  <h3 class="st-h"><span class="n">H</span>旧→新差异清单<small>.diffl</small></h3>
+  <div class="use">用于:这一改会动多少东西、差多少钱。金额类改动必备。</div>
+  <div class="diffl">
+    <div class="r h"><div>项目</div><div>改前</div><div>改后</div><div>差异</div></div>
+    <div class="r"><div>牛肉面 x2</div><div>56.00</div><div>56.00</div><div>0.00</div></div>
+    <div class="r"><div>券抵扣</div><div>—</div><div>-10.00</div><div class="dn">-10.00</div></div>
+    <div class="r tot"><div>实收合计</div><div>64.00</div><div>54.00</div><div class="dn">-10.00</div></div>
+  </div>
+</div>
+
+<div class="st" id="i">
+  <h3 class="st-h"><span class="n">I</span>内联新旧标注<small>.tag-new / .newf / .old</small></h3>
+  <div class="use">用于:哪块是新的、哪个值变了。读者第一件事是分清现状和新增,靠它。</div>
+  <div class="phone"><div class="bar">结算<span class="x">✕</span></div><div class="body">
+    <div class="row"><span class="k">合计</span><span class="v">64.00</span></div>
+    <div class="row newf"><span class="k">券抵扣<span class="tag-new">新增</span></span><span class="v">-10.00</span></div>
+    <div class="row"><span class="k">实收</span><span class="v"><span class="old">64.00</span> 54.00</span></div>
+    <button class="btn">确认收款</button>
+  </div></div>
+</div>
+
+<div class="st" id="j">
+  <h3 class="st-h"><span class="n">J</span>规则卡<small>.rule — 模式 B 核心</small></h3>
+  <div class="use">用于:一条业务规则怎么变的。原规则 → 新规则 → 触发条件 → 谁受影响 → 代码位置,五样都要有。</div>
+  <div class="rule">
+    <h4><span class="id">R3</span>超过 30 天的订单不能再退款</h4>
+    <dl class="kv">
+      <dt>原规则</dt><dd><div class="was">order_service.go:184 &nbsp; if order.Status == PAID<br>下单后任意时间都可发起退款</div></dd>
+      <dt>新规则</dt><dd><div class="now">order_service.go:184 &nbsp; if order.Status == PAID &amp;&amp; time.Since(order.PaidAt) &lt;= 30*24h<br>超过 30 天禁止退款,提示「已超过退款期限」</div></dd>
+      <dt>触发条件</dt><dd>POS 收银员 / 顾客端点「申请退款」,且订单已支付</dd>
+      <dt>受影响方</dt><dd>门店收银(拒绝提示) · 财务(退款单量下降) · 顾客(H5 新提示)</dd>
+      <dt>风险</dt><dd><span class="risk-h">中</span> — 存量超期订单需人工处理;文案要补 10 语言</dd>
+      <dt>兼容性</dt><dd>不向后兼容:老客户端不认新错误码 40031,会显示原始 message</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="st" id="k">
+  <h3 class="st-h"><span class="n">K</span>ASCII 面板<small>pre.ascii</small></h3>
+  <div class="use">用于:文件树 / 字段树 / 结构清单。<b>框内只放半角</b>,中文说明放右侧 # 注释列或框外,否则浏览器里必然错位。</div>
+<pre class="ascii">backend-repo
+  main/app
+    ├─ service/order_refund.go           +48 -12   * R3 R4
+    ├─ controller/order.go               +9  -2
+    └─ model/order.go                    +3  -0
+  admin/database/migrations
+    └─ 20260813_add_refund_deadline.php  +21       * DDL
+
+order_pay
+  ├─ pay_amount        decimal(10,2)   unchanged
+  ├─ discount_amount   decimal(10,2)   unchanged
+  └─ coupon_deduct     decimal(10,2)   NEW        # 券抵扣额</pre>
+</div>
+
+<div class="st" id="l">
+  <h3 class="st-h"><span class="n">L</span>mermaid 黑底卡<small>.mmd — 全篇唯一黑底</small></h3>
+  <div class="use">用于:状态机、调用链。页面整体浅色,只有它黑底,一眼跳出来。不能引 mermaid.js(会被 COEP 拦),所以先写深色源码卡,<b>页面收尾必须跑 <code>assets/render-mermaid.py</code></b> 把它渲成内联 SVG —— 只贴源码手机上就是一坨代码。源码会自动收进 details 折叠,仍可复制到 issue / PR。第一行的 init 主题必须带上,渲染出来才是黑底。</div>
+  <div class="mmd">
+    <div class="cap">退款状态机 · 收尾跑 render-mermaid.py 渲成图</div>
+<pre>%%{init:{'theme':'base','themeVariables':{'background':'#0b0f14','primaryColor':'#111827','primaryTextColor':'#e5e7eb','primaryBorderColor':'#334155','lineColor':'#64748b','secondaryColor':'#1e293b','tertiaryColor':'#0f172a','fontFamily':'ui-monospace,Menlo,monospace'}}}%%
+<span class="kw">stateDiagram-v2</span>
+    [*] --&gt; PAID
+    PAID --&gt; REFUNDING : 申请退款(≤30天)
+<span class="nw">    PAID --&gt; REJECTED  : 申请退款(&gt;30天) 【本次新增】</span>
+    REFUNDING --&gt; REFUNDED : 网关回调成功
+    REFUNDING --&gt; PAID     : 网关回调失败,回滚</pre>
+  </div>
+</div>
+
+<div class="st" id="m">
+  <h3 class="st-h"><span class="n">M</span>数字条<small>.stats</small></h3>
+  <div class="use">用于:一次改动的关键数字,放在报告最上面。</div>
+  <div class="stats">
+    <div class="s o"><div class="v">14</div><div class="l">文件改动</div></div>
+    <div class="s"><div class="v">+312 / -87</div><div class="l">增删行</div></div>
+    <div class="s g"><div class="v">2</div><div class="l">表字段变更</div></div>
+    <div class="s r"><div class="v">5</div><div class="l">业务规则改动</div></div>
+    <div class="s r"><div class="v">1</div><div class="l">高风险</div></div>
+  </div>
+</div>
+
+<div class="st" id="x">
+  <h3 class="st-h"><span class="n">X</span>基础件<small>手机帧 / 流转图 / 对比表 / 说明块</small></h3>
+  <div class="flow">
+    <span class="n">草稿</span><span class="ar">→</span>
+    <span class="n">待审核</span><span class="ar">→</span>
+    <span class="n hit">已生效<span class="tag-new">新增</span></span><span class="ar">→</span>
+    <span class="n bad">已作废</span>
+  </div>
+  <table class="cmp">
+    <tr><th>项</th><th>改前</th><th>改后</th></tr>
+    <tr class="hit"><td>退款期限</td><td class="n">不限</td><td class="n">30 天</td></tr>
+  </table>
+  <div class="hint"><b>规则:</b>说明写在 hint 块里,别塞进界面帧冒充 UI 文案。</div>
+</div>
+
+</div>
+<div class="foot">积木库 · 静态展示 · 非可交互</div>
+</body>
+</html>
