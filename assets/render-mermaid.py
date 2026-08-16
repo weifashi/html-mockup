@@ -65,9 +65,12 @@ PRE_RE = re.compile(r"<pre>(.*?)</pre>", re.S)
 SVG_RE = re.compile(r"<svg\b.*?</svg>", re.S)
 PH_RE = re.compile("\x00SVG(\\d+)\x00")
 
-CSS_MARK = "/* mermaid-svg */"
-CSS_ADD = """
-/* mermaid-svg */
+# 自己独立一个 <style>，不往页面原有的 <style> 里塞 ——
+# 以前用「标记 → </style>」的范围替换，会把标记之后、</style> 之前的
+# 用户 CSS 一起吃掉（实测吃掉过一整段 .bleed 规则）。
+STYLE_RE = re.compile(r'<style data-mermaid-svg>.*?</style>', re.S)
+CSS_MARK = "<style data-mermaid-svg>"
+CSS_ADD = """<style data-mermaid-svg>
 .mmd{position:relative}
 .mmd svg{height:auto;display:block;margin:0 auto}
 .mmd.fit svg{width:100%}
@@ -77,7 +80,7 @@ CSS_ADD = """
  margin-top:6px;text-align:right;position:sticky;left:0}
 /* 宽图挣脱正文栏——正文栏一般 900px，宽图硬塞进去要滚很久 */
 @media (min-width:1000px){
- .wrap .mmd.wide{--bw:min(1320px,calc(100vw - 40px));width:var(--bw);
+ .wrap .mmd.wide{--bw:min(1400px,calc(100vw - 40px));width:var(--bw);
   margin-left:calc(50% - var(--bw) / 2)}
 }
 .mmd details{margin-top:9px;position:sticky;left:0}
@@ -88,6 +91,7 @@ CSS_ADD = """
 .mmd details[open] summary:before{content:"\\25be "}
 .mmd details pre{margin-top:6px;max-height:340px;overflow:auto;white-space:pre-wrap;word-break:break-word;
  font-size:11px;opacity:.85}
+</style>
 """
 
 
@@ -232,12 +236,13 @@ def process(path, force=False):
     out = CARD_RE.sub(repl, work)
     out = PH_RE.sub(lambda m: blobs[int(m.group(1))], out)
     if done or refit:
-        if CSS_MARK not in out:
-            out = out.replace("</style>", CSS_ADD + "</style>", 1)
+        # 只替换我们自己那个 <style>，绝不碰页面原有的 CSS
+        if STYLE_RE.search(out):
+            out = STYLE_RE.sub(lambda _: CSS_ADD, out, count=1)
+        elif "</head>" in out:
+            out = out.replace("</head>", CSS_ADD + "\n</head>", 1)
         else:
-            # CSS 里有 \2190 之类的转义，不能当替换串（会被解释成组引用），用回调
-            out = re.sub(re.escape(CSS_MARK) + r".*?(?=</style>)",
-                         lambda _: CSS_ADD.lstrip("\n"), out, count=1, flags=re.S)
+            out = CSS_ADD + "\n" + out
         open(path, "w", encoding="utf-8").write(out)
     return done, refit, skipped
 
