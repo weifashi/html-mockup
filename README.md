@@ -98,12 +98,15 @@ assets/
   bootstrap.sh               环境自举（幂等，重复跑安全）
   serve.py                   静态服务（标准库）
   render-mermaid.py          把 mermaid 源码卡渲成内联 SVG
+  check-overflow.py          多视口检测横向溢出（元素撑破整页，页面上看不出来）
 ```
 
 ### 几条硬约束
 
 - **单文件、零外部依赖**。不引 CDN、不引 Google Fonts、不外链图片、不引 mermaid.js —— 有些部署环境带 `Cross-Origin-Embedder-Policy: require-corp`，跨源资源会被浏览器直接拦掉。字体用系统字体栈，图标用 Unicode 字符。
 - **线图必须渲染成图**。SVG 是纯文本，预渲染后内联进 HTML，既是真图又不破坏单文件约束。只贴源码等于没画 —— 读者手机上看到的是一坨代码。
+- **正文 16px 起，不要更小**。中文比拉丁字母更吃字号，14px 正文在 900px 栏里读着累。要更紧凑就减内容，不是缩字。
+- **正文栏 900px，宽内容用 `.bleed` 挣脱**。900px 在 16px 下一行约 54 个汉字，已经偏长（中文舒适区间 30~45），**再放宽只会更糟**。真正装不下的只有并排双栏、10 列以上宽表、宽 ASCII 树 —— 给它们 `.bleed`（上限 1400px，自动居中，自带横向滚动兜底）。
 - **ASCII 图只用半角**。框线里混中文在浏览器里必然错位。
 - **改动汇报必须落到「页面 → 操作 → 结果」**。只写「改了 xxx 函数的判断条件」，PM 无法验收、测试无法复现。
 
@@ -120,7 +123,24 @@ python3 assets/render-mermaid.py page.html [more.html ...] [--force]
 - **幂等**：已渲染过的跳过；重复跑只重算尺寸策略，`--force` 才重渲
 - **源码保留**在 `<details>` 折叠里，仍可复制去 issue / PR
 - **按 viewBox 宽度分档**：≤900px 撑满容器；>900px 保持原尺寸 + 横向滚动 + 提示 —— 宽图硬塞进 390px 手机屏会缩到 13%，字比蚂蚁还小
+- **不碰页面原有的 CSS**：自己的样式写进独立的 `<style data-mermaid-svg>`，更新时整块替换。早期版本把 CSS 塞进页面已有的 `<style>`、用「标记 → `</style>`」范围替换，会把标记之后的用户 CSS 一起吃掉 —— 已修
 - **失败不改坏页面**：缺 `mmdc` 或 Chrome 时保持源码卡原样
+
+---
+
+## check-overflow.py
+
+同样可以脱离 skill 单独用 —— 检查页面有没有**横向溢出**（某个元素撑破整页，右侧内容跑到屏幕外）：
+
+```bash
+python3 assets/check-overflow.py page.html [more.html ...] [--widths=768,1280,1568]
+```
+
+**为什么需要它**：宽内容（并排双栏、宽表）塞进窄正文栏、外层又是 `overflow-x: visible` 时，内容会一路溢出到 `<body>`。**页面上没有任何报错、肉眼扫过去也正常**，只有量 `document.documentElement.scrollWidth - clientWidth` 才发现。实测一个页面被撑破 121px，右侧两列直接跑到屏幕外。
+
+它会逐个视口检测，并只报**真正没被任何滚动容器兜住**的元素（自带 `overflow-x:auto` 的容器内溢出是正常的，不算）。有溢出时退出码为 1，方便接进 CI。
+
+只依赖系统 Chrome / Chromium。
 
 ---
 
