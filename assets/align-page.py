@@ -26,18 +26,25 @@ M2 = {'10':'10.5','10.5':'11','11':'11.5','11.5':'12','12':'12.5','12.5':'13',
       '17':'18','18':'19','19':'20','22':'23','23':'24'}
 SVG_RE = re.compile(r'<svg\b.*?</svg>', re.S)
 FMARK = '/* font-scale-2 */'
-LMARK = '/* layout-guard'
+LMARK = '/* layout-guard v3'
 CSS = """
-/* layout-guard —— 与模板一致的布局兜底，防止内容悄悄撑破整页 */
+/* layout-guard v3 —— 与模板一致的布局兜底，防止内容悄悄撑破整页 */
 .wrap .bleed{overflow-x:auto}
 @media (min-width:1000px){
   .wrap .bleed,.wrap .mmd.wide{--bw:min(1400px,calc(100vw - 40px));
     width:var(--bw);margin-left:calc(50% - var(--bw) / 2)}
 }
 .mmd{overflow-x:auto}
+/* 裸文本里的长标识符(没包 <code> 的那些)在窄屏必须能断行 —— 
+   按元素右边缘扫是扫不到它的,它是文本节点,没有元素可报 */
+.wrap{overflow-wrap:break-word}
 code{overflow-wrap:anywhere}
 .wrap table.cmp{display:block;overflow-x:auto;max-width:100%}
 .wrap dd,.wrap dt,.wrap dl > *{min-width:0}
+/* 窄屏下表格一律可横滚 —— 逐个枚举 .cmp/.mx/.dt 挡不住，宽屏不受影响 */
+@media (max-width:900px){
+  .wrap table{display:block;overflow-x:auto;max-width:100%}
+}
 """
 
 def scale(t, M):

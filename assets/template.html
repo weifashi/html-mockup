@@ -169,6 +169,13 @@ pre.ascii{background:#f8fafc;border:1px solid var(--line);border-radius:6px;padd
 .wrap table.cmp{display:block;overflow-x:auto;max-width:100%}
 /* grid/flex 子项默认 min-width:auto,不肯收缩到轨道宽度 —— 经典溢出源 */
 .wrap dd,.wrap dt,.wrap dl > *{min-width:0}
+/* 窄屏下表格一律可横滚 —— 逐个枚举 .cmp/.mx/.dt 挡不住，宽屏不受影响 */
+@media (max-width:900px){
+  .wrap table{display:block;overflow-x:auto;max-width:100%}
+}
+/* 裸文本里的长标识符(没包 <code> 的那些)在窄屏必须能断行 —— 
+   按元素右边缘扫是扫不到它的,它是文本节点,没有元素可报 */
+.wrap{overflow-wrap:break-word}
 code{overflow-wrap:anywhere}
 .foot{text-align:center;color:var(--mut2);font-size:13px;padding:24px 0}
 @media(max-width:640px){.wrap{padding:0 10px}.phone{width:100%}}

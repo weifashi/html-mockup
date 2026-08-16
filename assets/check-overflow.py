@@ -24,7 +24,15 @@ PROBE = (
     'while((p=p.parentElement)){const o=getComputedStyle(p).overflowX;'
     'if(o==="auto"||o==="hidden"||o==="scroll"){c=true;break;}}'
     'if(!c)bad.push({t:e.tagName.toLowerCase()+"."+(e.className||"").toString().split(" ")[0],'
-    'r:r.right|0,w:r.width|0});}});'
+    'r:r.right|0,w:r.width|0});}'
+    # 盒子没超但内容溢出自己 —— 长裸文本(没包 <code>)撑破时没有元素可报，
+    # 只按 right 扫会得到「撑破 N px 但 0 个元素」的矛盾结果
+    'const ov=e.scrollWidth-e.clientWidth;'
+    'if(ov>1&&getComputedStyle(e).overflowX==="visible"){let p=e,c=false;'
+    'while((p=p.parentElement)){const o=getComputedStyle(p).overflowX;'
+    'if(o==="auto"||o==="hidden"||o==="scroll"){c=true;break;}}'
+    'if(!c)bad.push({t:e.tagName.toLowerCase()+"."+(e.className||"").toString().split(" ")[0]+" (内容溢出)",'
+    'r:e.scrollWidth,w:e.clientWidth});}});'
     'document.title="@@"+JSON.stringify({vw,'
     'ov:document.documentElement.scrollWidth-vw,n:bad.length,top:bad.slice(0,5)})+"@@";'
 )
