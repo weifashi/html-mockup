@@ -152,6 +152,20 @@ pre.ascii{background:#f8fafc;border:1px solid var(--line);border-radius:6px;padd
 .stats .s .l{font-size:11px;color:var(--mut);margin-top:2px}
 .stats .s.g .v{color:var(--green)} .stats .s.r .v{color:var(--red)} .stats .s.o .v{color:var(--orange)}
 
+/* ============ 宽内容挣脱正文栏 ============ */
+/* 正文栏保持 900px(实测每行约 67 汉字,阅读最舒服),只让天生宽的内容用满屏幕。
+   给 .bleed 的:并排双栏(两个后台外壳 ≈1300px)、宽 ASCII 树、多列表格。
+   .mmd.wide 由 render-mermaid.py 自动打标(viewBox > 900px),不用手加。 */
+.wrap .bleed{overflow-x:auto}          /* 兜底:再宽也不许悄悄撑破页面,改成自己横向滚 */
+@media (min-width:1000px){
+  .wrap .bleed,.wrap .mmd.wide{
+    --bw:min(1320px,calc(100vw - 40px));
+    width:var(--bw);
+    margin-left:calc(50% - var(--bw) / 2);
+  }
+}
+/* 长标识符(表名、带下划线的字段名)在窄屏必须能断行,否则整页被撑破 */
+code{overflow-wrap:anywhere}
 .foot{text-align:center;color:var(--mut2);font-size:12px;padding:24px 0}
 @media(max-width:640px){.wrap{padding:0 10px}.phone{width:100%}}
 </style>

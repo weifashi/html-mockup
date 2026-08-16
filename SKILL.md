@@ -125,11 +125,14 @@ ls -d ~/www/*/ | rg -i "关键词"
 ```bash
 # 有 mermaid 卡就先渲染,再验(顺序不能反,渲染会改文件)
 python3 ~/.claude/skills/html-mockup/assets/render-mermaid.py <目录>/index.html
+# 横向溢出:页面上看不出来,不量就发现不了
+python3 ~/.claude/skills/html-mockup/assets/check-overflow.py <目录>/index.html
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8008/<feature>/
 ```
 
 不是 200 就重跑 `bootstrap.sh`(Coder 工作区重启后服务会掉)。
 `grep -c '<svg' <目录>/index.html` 要等于 `.mmd` 卡片数,不等就是有图没渲出来。
+`check-overflow.py` 报撑破就照 §7「宽度」给那几个元素加 `.bleed`。
 
 ### A5. 交付链接
 
@@ -184,6 +187,38 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8008/<feature>/
 7. **同时交两份**:8008 上的 HTML 一页(给人看)+ `docs/reviews/<slug>/change-report.md`(给 git 留底)。HTML 会丢,Markdown 不会。
 
 ## 7. 视觉规范
+
+### 宽度:正文栏 900,宽内容用 `.bleed` 挣脱出去
+
+**不要为了「屏幕还很空」就去调大 `.wrap`。**900px 是实测出来的:一行约 **67 个汉字**,正是最舒服的区间;放到 1180 就是 88 字/行、1400 是 105 字/行,读起来累。而且实测同一页从 900 放到 1180,总页高只缩 7%、表格高度**一点没变** —— 说明挤的根本不是正文和表格。
+
+真正装不下的只有**天生就宽**的那几类,给它们加 `.bleed`,让它们单独挣脱正文栏(上限 1320px,自动居中):
+
+```html
+<div class="bleed"><div class="two"> …两个后台外壳并排… </div></div>
+<div class="bleed"><table> …10 列的对照表… </table></div>
+<pre class="ascii bleed"> …很宽的目录树… </pre>
+```
+
+| 内容 | 要不要 `.bleed` |
+|---|---|
+| 正文、说明块、规则卡、2~4 列表格 | **不要** —— 900 正合适 |
+| 并排双栏(两个 `.shell` 后台外壳 ≈ 1300px) | **要** |
+| 10 列以上的宽表 | **要** |
+| 很宽的 ASCII 树 | **要** |
+| mermaid 宽图 | **不用手加**,`render-mermaid.py` 按 viewBox > 900px 自动打 `.mmd.wide` |
+
+`.bleed` 自带 `overflow-x:auto` 兜底 —— 1320 还装不下就自己横向滚,**绝不会悄悄把整页撑破**。视口窄于 1000px 时它自动失效(那时正文栏本来就占满屏,挣脱没意义)。
+
+> **实测教训**:一份 issue 调查页把两个后台外壳并排塞进 900 的正文栏,容器 826px、内容要 1310px,而外层全是 `overflow-x: visible` —— 内容一路溢出到 `.st`、`.wrap`,**整页被撑破 121px**,右侧内容跑到屏幕外。页面上看不出报错,只有量 `document.scrollWidth > innerWidth` 才发现。
+>
+> 收尾自检加一条:
+> ```bash
+> # 页面不该有横向溢出;>0 就是有元素撑破了
+> ```
+> 用无头浏览器测 `document.documentElement.scrollWidth - document.documentElement.clientWidth`,应为 0。
+
+另外模板已内置 `code{overflow-wrap:anywhere}` —— 长表名 / 带下划线的字段名在窄屏必须能断行,否则同样撑破整页。
 
 ### 颜色是有意义的,别乱用
 

@@ -75,6 +75,11 @@ CSS_ADD = """
 .mmd.wide:after{content:"\\2190 \\2192 \\0020 \\6b64 \\56fe \\8f83 \\5bbd \\ff0c \\53ef \\5de6 \\53f3 \\6ed1 \\52a8";
  display:block;color:#64748b;font-size:10.5px;font-family:var(--mono,monospace);
  margin-top:6px;text-align:right;position:sticky;left:0}
+/* 宽图挣脱正文栏——正文栏一般 900px，宽图硬塞进去要滚很久 */
+@media (min-width:1000px){
+ .wrap .mmd.wide{--bw:min(1320px,calc(100vw - 40px));width:var(--bw);
+  margin-left:calc(50% - var(--bw) / 2)}
+}
 .mmd details{margin-top:9px;position:sticky;left:0}
 .mmd details summary{color:#94a3b8;font-size:11px;cursor:pointer;font-family:var(--mono,monospace);
  list-style:none;user-select:none;padding:2px 0}

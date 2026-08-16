@@ -31,6 +31,20 @@ font-size:12px;color:var(--ink2);text-decoration:none;background:#fff}
 .tag-new{display:inline-block;background:var(--green);color:#fff;font-size:10px;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}
 .newf{border:1px dashed var(--green)!important;background:#f0fdf4!important}
 .old{color:var(--red);text-decoration:line-through}
+/* ============ 宽内容挣脱正文栏 ============ */
+/* 正文栏保持 900px(实测每行约 67 汉字,阅读最舒服),只让天生宽的内容用满屏幕。
+   给 .bleed 的:并排双栏(两个后台外壳 ≈1300px)、宽 ASCII 树、多列表格。
+   .mmd.wide 由 render-mermaid.py 自动打标(viewBox > 900px),不用手加。 */
+.wrap .bleed{overflow-x:auto}          /* 兜底:再宽也不许悄悄撑破页面,改成自己横向滚 */
+@media (min-width:1000px){
+  .wrap .bleed,.wrap .mmd.wide{
+    --bw:min(1320px,calc(100vw - 40px));
+    width:var(--bw);
+    margin-left:calc(50% - var(--bw) / 2);
+  }
+}
+/* 长标识符(表名、带下划线的字段名)在窄屏必须能断行,否则整页被撑破 */
+code{overflow-wrap:anywhere}
 .foot{text-align:center;color:var(--mut2);font-size:12px;padding:24px 0}
 
 /* A 桌面后台外壳 */
