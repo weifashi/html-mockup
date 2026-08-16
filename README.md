@@ -99,6 +99,7 @@ assets/
   serve.py                   静态服务（标准库）
   render-mermaid.py          把 mermaid 源码卡渲成内联 SVG
   check-overflow.py          多视口检测横向溢出（元素撑破整页，页面上看不出来）
+  align-page.py              把已有页面对齐到当前模板（字号阶梯 + 布局兜底 CSS）
 ```
 
 ### 几条硬约束
@@ -141,6 +142,23 @@ python3 assets/check-overflow.py page.html [more.html ...] [--widths=768,1280,15
 它会逐个视口检测，并只报**真正没被任何滚动容器兜住**的元素（自带 `overflow-x:auto` 的容器内溢出是正常的，不算）。有溢出时退出码为 1，方便接进 CI。
 
 只依赖系统 Chrome / Chromium。
+
+---
+
+## align-page.py
+
+页面是一次性产物，模板改了不会自动回流。而新页面常常是**照着某个旧页面抄 CSS** 起手的（不是从 `_template` 复制），于是把那天的旧字号、缺失的布局兜底一起继承下来 —— 页面看着完全正常，不量根本发现不了。
+
+```bash
+python3 assets/align-page.py page.html [more.html ...]
+```
+
+- **字号**：整体上调到当前阶梯（16px 正文）
+- **布局兜底**：`.bleed` / `.mmd` 横滚 / `code` 断行 / `table.cmp` 横滚 / `dd dt` 的 `min-width:0`
+- **幂等**：靠 `<style>` 里的标记判重，重复跑安全
+- **内联 SVG 一律跳过并断言前后一致** —— mermaid 的节点框尺寸是渲染那一刻烤死的，字号一改文字就顶出框被裁
+
+跑完接着跑 `check-overflow.py`：字号变大会把并排双栏、宽表撑得更宽。
 
 ---
 

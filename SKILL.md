@@ -139,10 +139,14 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8008/<feature>/
 `grep -c '<svg' <目录>/index.html` 要等于 `.mmd` 卡片数,不等就是有图没渲出来。
 `check-overflow.py` 报撑破就照 §7「宽度」给那几个元素加 `.bleed`。
 
+**改已有页面时,先把它对齐到当前模板**(幂等,重复跑安全):
+
 ```bash
-# 正文字号:没有 16px 基本就是从旧页面抄来的,照 §7「字号」整体上调
-grep -q 'font-size:16px' <目录>/index.html && echo "字号 OK" || echo "! 正文字号偏小,见 §7"
+python3 ~/.claude/skills/html-mockup/assets/align-page.py <目录>/index.html
 ```
+
+它补两样:字号阶梯(对齐 16px 正文)、布局兜底 CSS(`.bleed` / `.mmd` 横滚 / `code` 断行 / `table.cmp` 横滚 / `dd dt` 的 `min-width:0`)。**内联 SVG 一律跳过并断言前后一致。**
+跑完**必须再跑一次 `check-overflow.py`** —— 字号变大会把并排双栏、宽表撑得更宽。
 
 ### A5. 交付链接
 
