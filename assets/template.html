@@ -165,6 +165,10 @@ pre.ascii{background:#f8fafc;border:1px solid var(--line);border-radius:6px;padd
   }
 }
 /* 长标识符(表名、带下划线的字段名)在窄屏必须能断行,否则整页被撑破 */
+/* 对比表天生比正文栏宽,给它自己横向滚动,别撑破整页 */
+.wrap table.cmp{display:block;overflow-x:auto;max-width:100%}
+/* grid/flex 子项默认 min-width:auto,不肯收缩到轨道宽度 —— 经典溢出源 */
+.wrap dd,.wrap dt,.wrap dl > *{min-width:0}
 code{overflow-wrap:anywhere}
 .foot{text-align:center;color:var(--mut2);font-size:13px;padding:24px 0}
 @media(max-width:640px){.wrap{padding:0 10px}.phone{width:100%}}
