@@ -3,7 +3,7 @@
 
     python3 align-page.py <page.html> [<page2.html> ...] [--report]
 
-  --report  切到「改动汇报 / 调查报告」档:正文栏 900 -> 1280。
+  --report  切到「改动汇报 / 调查报告」档:正文栏 900 -> 自适应 clamp(900,100vw-64,1920)。
             这类页面主体是规则卡 + 表格 + 并排双栏,不是散文,900 装不下,
             而且紧邻的 .bleed(1440) 会形成一倍宽的断层。
 
@@ -60,9 +60,17 @@ def scale(t, M):
                lambda m: f"font-size:{M.get(m.group(1), m.group(1))}px", w)
     return re.sub(r'\x00S(\d+)\x00', lambda m: blobs[int(m.group(1))], w)
 
-REP_CSS = '.wrap.rep{max-width:1280px}'
+REP_CSS = """.wrap.rep{max-width:clamp(900px,calc(100vw - 64px),1920px)}
+@media (min-width:1000px){
+  .wrap.rep .bleed,.wrap.rep .mmd.wide{width:100%;max-width:100%;margin-left:0}
+}
+.wrap.rep .rule dd,.wrap.rep .rule .kv dd,.wrap.rep .uv,
+.wrap.rep .say,.wrap.rep .hint,.wrap.rep .lead{max-width:52em}"""
 
 def to_report(t):
+    # 老页面写死了 .wrap.rep{max-width:1280px}，先清掉再注入自适应版
+    t = re.sub(r'/\* 改动汇报[^*]*\*/\s*\n?\.wrap\.rep\{max-width:1280px\}\n?', '', t)
+    t = t.replace('.wrap.rep{max-width:1280px}', '')
     """切到报告档:补 .wrap.rep 规则 + 给所有 <div class="wrap"> 加 rep。"""
     if REP_CSS not in t:
         t = t.replace('</style>',
@@ -85,8 +93,8 @@ for p in [a for a in sys.argv[1:] if not a.startswith('--')]:
         out = out.replace('</style>', FMARK + '</style>', 1); did.append('字号')
     if LMARK not in out:
         out = out.replace('</style>', CSS + '</style>', 1); did.append('布局')
-    if REPORT and 'class="wrap rep"' not in out:
-        out = to_report(out); did.append('报告档 1280')
+    if REPORT and 'clamp(900px' not in out:
+        out = to_report(out); did.append('报告档(自适应)')
     if not did:
         print(f"  {name}: 已是最新"); continue
     open(p, 'w', encoding='utf-8').write(out)

@@ -15,7 +15,13 @@ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft
 .wrap{max-width:1000px;margin:0 auto;padding:0 16px}
 .wrap.desk{max-width:1180px}
 /* 改动汇报 / 调查报告档:见 SKILL.md §7 宽度 */
-.wrap.rep{max-width:1280px}
+/* 报告档外壳跟着屏幕自适应；文字块收住行长；宽块用满外壳(不再挣脱) */
+.wrap.rep{max-width:clamp(900px,calc(100vw - 64px),1920px)}
+@media (min-width:1000px){
+  .wrap.rep .bleed,.wrap.rep .mmd.wide{width:100%;max-width:100%;margin-left:0}
+}
+.wrap.rep .rule dd,.wrap.rep .rule .kv dd,.wrap.rep .uv,
+.wrap.rep .say,.wrap.rep .hint,.wrap.rep .lead{max-width:52em}
 a{color:var(--orange)}
 .hd{background:#fff;border-bottom:3px solid var(--amber);padding:22px 0 18px;margin-bottom:18px}
 .hd h1{margin:0 0 6px;font-size:24px}
