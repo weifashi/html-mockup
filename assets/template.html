@@ -23,6 +23,9 @@ body{
 }
 .wrap{max-width:900px;margin:0 auto;padding:0 16px}
 .wrap.desk{max-width:1180px}
+/* 改动汇报 / 调查报告档:规则卡 + 表格 + 并排双栏为主,900 装不下,
+   而且紧邻的 .bleed 会形成 500px 的断层。见 SKILL.md §7 宽度 */
+.wrap.rep{max-width:1280px}
 a{color:var(--orange)}
 
 /* ============ 页头 ============ */
@@ -159,7 +162,7 @@ pre.ascii{background:#f8fafc;border:1px solid var(--line);border-radius:6px;padd
 .wrap .bleed{overflow-x:auto}          /* 兜底:再宽也不许悄悄撑破页面,改成自己横向滚 */
 @media (min-width:1000px){
   .wrap .bleed,.wrap .mmd.wide{
-    --bw:min(1400px,calc(100vw - 40px));
+    --bw:min(1440px,calc(100vw - 40px));
     width:var(--bw);
     margin-left:calc(50% - var(--bw) / 2);
   }

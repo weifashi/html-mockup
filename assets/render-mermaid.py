@@ -80,7 +80,7 @@ CSS_ADD = """<style data-mermaid-svg>
  margin-top:6px;text-align:right;position:sticky;left:0}
 /* 宽图挣脱正文栏——正文栏一般 900px，宽图硬塞进去要滚很久 */
 @media (min-width:1000px){
- .wrap .mmd.wide{--bw:min(1400px,calc(100vw - 40px));width:var(--bw);
+ .wrap .mmd.wide{--bw:min(1440px,calc(100vw - 40px));width:var(--bw);
   margin-left:calc(50% - var(--bw) / 2)}
 }
 .mmd details{margin-top:9px;position:sticky;left:0}
