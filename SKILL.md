@@ -396,6 +396,10 @@ npx --no-install mmdc --version || npm i -g @mermaid-js/mermaid-cli   # 需要 g
 | 工具往页面已有的 `<style>` 里塞 CSS,再用「标记 → `</style>`」范围替换来更新 | **会把标记之后、`</style>` 之前的所有 CSS 一起吃掉**。`render-mermaid.py` 早期就是这么写的,实测吃掉过一整段刚加的 `.bleed` 规则 —— 页面看着正常,只是某个布局悄悄退回旧样子 | 工具的 CSS 放**自己独立的 `<style data-xxx>`**,更新时整块替换。不跟别人的 CSS 混在一个块里 |
 | mermaid 只贴源码卡、不跑渲染器 | **手机上就是一坨代码,读者根本看不到图** —— 这是实际翻过的车 | 收尾必跑 `render-mermaid.py`;`grep -c '<svg'` 数量对得上 `.mmd` 卡片数才算完 |
 | 宽图(viewBox > 900px)让它 `width:100%` 缩进容器 | 塞进 390px 手机屏 = 缩到 13%,字比蚂蚁还小,等于没画 | 渲染器已自动分档:宽图保原尺寸 + 横向滚动。**别手工把 `.mmd wide` 改回 `fit`** |
+| **用 XML 解析器(`ElementTree`)验含内联 SVG 的页面** | 报 `not well-formed (invalid token)` —— 但页面完全正常。archify 之类的工具会输出**无值布尔属性**(`<text data-detail-anchor x=…>`),HTML5 合法、XML 不合法 | **含内联 SVG 的页面不能用 XML 解析器验。**用 HTMLParser(见下条)或直接浏览器测量。这已是同类假报错第三次:`</path> 栈顶 <marker>`、`scrollWidth > foreignObject width`、本条 |
+| 合并多份工具产物时不给 `<button>` 写 `color:inherit` | **深色主题下 tab 文字是黑字,几乎看不见** —— `<button>` 默认不继承父级 `color`,用的是浏览器默认色 | 凡是 `background:none;border:0` 的按钮,**必须显式 `color:inherit`** |
+| 拿输出文件名当页面标题 | 输出叫 `index.html` 时,标题就成了「index」 | 文件名是 `index`/`default` 时退回**目录名**;或显式传 `--title=` |
+| 直接用工具产物的 `<title>` 当小标题 | 带上工具自己加的尾巴(archify 会加 ` Diagram`) | 剥掉已知尾缀 |
 | 用 HTMLParser 扫含内联 SVG 的页面 | 一堆 `</path> 栈顶 <marker>` 假报错 —— SVG 的 `<path>` 是配对写法,不是 HTML 空元素 | 内联 SVG 单独用 `ElementTree.fromstring` 验;HTMLParser 扫剩下的部分 |
 | 图上留讲解标注、写「保持原样」清单 | 对方以为那些字是界面上的 | 界面帧里只放界面上真有的字,解释放 `.hint` 块 |
 | 用 `[文字](url)` 给链接,地址藏在文字后面 | 读者没法复制、没法转发,也不知道是哪台机器的哪个原型 | **有地址就明文贴完整 URL**;裸 URL 本来就可点,明文和可点不冲突 |

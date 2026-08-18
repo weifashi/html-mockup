@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """把多份 archify 产物合并成一个 tab 页（单文件、零外链）。
 
-    python3 archify-tabs.py <out.html> <标签>=<a.html> [<标签>=<b.html> ...]
+    python3 archify-tabs.py <out.html> <标签>=<a.html> [...] [--title=页面标题]
     python3 archify-tabs.py <out.html> a.html b.html            # 标签取图自己的标题
 
 为什么要这个:
@@ -34,7 +34,9 @@ TAB_CSS = """
 .tabbar{display:flex;gap:6px;border-bottom:2px solid rgba(128,128,128,.3);
  margin-bottom:14px;flex-wrap:wrap}
 .tb{border:0;background:none;padding:9px 16px;font-size:15px;cursor:pointer;
- border-bottom:2px solid transparent;margin-bottom:-2px;font-family:inherit;opacity:.65}
+ border-bottom:2px solid transparent;margin-bottom:-2px;
+ font-family:inherit;color:inherit;opacity:.6}   /* color:inherit 必须写，button 不继承 */
+.tb:hover{opacity:.85}
 .tb.on{border-bottom-color:currentColor;font-weight:600;opacity:1}
 .pane{display:none}
 .pane.on{display:block}
@@ -70,13 +72,18 @@ def load(path: str):
     css = "\n".join(STYLE_RE.findall(src))
     t = TITLE_RE.search(src)
     title = re.sub(r"\s+", " ", t.group(1)).strip() if t else os.path.basename(path)
+    title = re.sub(r"\s*Diagram$", "", title)
     return m.group(0), css, title
 
 
 def main(argv):
     if len(argv) < 3:
         sys.exit(__doc__)
-    out_path, items = argv[1], argv[2:]
+    args = [a for a in argv[1:] if not a.startswith("--title=")]
+    tflag = [a for a in argv[1:] if a.startswith("--title=")]
+    out_path, items = args[0], args[1:]
+    if not items:
+        sys.exit(__doc__)
 
     svgs, css_set, tabs, panes = [], [], [], []
     for i, item in enumerate(items):
@@ -98,7 +105,11 @@ def main(argv):
               file=sys.stderr)
     css = "\n".join(sorted(uniq, key=len, reverse=True)) if len(uniq) > 1 else css_set[0]
 
-    page_title = os.path.splitext(os.path.basename(out_path))[0]
+    # 输出常叫 index.html，那时用目录名，别把标题写成 "index"
+    stem = os.path.splitext(os.path.basename(out_path))[0]
+    if stem in ("index", "default"):
+        stem = os.path.basename(os.path.dirname(os.path.abspath(out_path))) or stem
+    page_title = tflag[0].split("=", 1)[1] if tflag else stem
     out = (
         '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -113,6 +124,8 @@ def main(argv):
     if ext:
         print(f"  ! 产物仍有 {len(ext)} 处外链，违反单文件约束", file=sys.stderr)
 
+    d = os.path.dirname(os.path.abspath(out_path))
+    os.makedirs(d, exist_ok=True)
     open(out_path, "w", encoding="utf-8").write(out)
     total = sum(os.path.getsize(i.partition("=")[2] or i.partition("=")[0]) for i in items)
     print(f"  {os.path.basename(out_path)}: {len(items)} 张图  "
