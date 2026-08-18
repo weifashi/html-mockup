@@ -263,6 +263,48 @@ python3 ~/.claude/skills/html-mockup/assets/check-overflow.py <目录>/index.htm
 | `.wrap dd,.wrap dt,.wrap dl > *{min-width:0}` | grid 子项的 `min-width:auto` 不肯收缩到轨道宽度 |
 | `.mmd{overflow-x:auto}` | 宽图没容器兜 |
 
+### 什么时候升级到 archify(可选,不替代 mermaid)
+
+[archify](https://github.com/tt-a1i/archify) 是另一个 Agent Skill(MIT),专做架构类图,视觉水准明显高一档,而且**渲染前用 JSON Schema + 布局约束校验**——标签塞不下、节点重叠、边穿过无关节点,它都在渲染前拦住并给出修正坐标。
+
+**但它不是 mermaid 的替代品**,四种图型实测成本差极大,决定因素是**坐标自由度**:
+
+| 图型 | 轮次 | 布局模型 | 中文标签 | 用不用 |
+|---|---|---|---|---|
+| `sequence` 时序图 | **1** | 绝对 `y` 坐标 | 原文照搬 | **首选** |
+| `lifecycle` 状态机 | 5 | 一维链 `col` | 原文照搬 | 可用(4 轮是机械调标签位置,它会算好坐标给你) |
+| `architecture` 架构图 | 6 | 绝对 `pos`/`size` | 原文照搬 | 可用,但**别用 `boundary`**(见下) |
+| `workflow` 流程图 | 7 | 泳道 × 6 列**网格** | **被迫压到 2~4 字** | **别用**,留给 mermaid |
+
+**规律**:给绝对坐标的中文没问题,给网格的塞不进去——网格格宽是按短英文标签定死的。
+
+**已知坑**:`architecture` 的 `boundary`(区域框)与「跨边界连线」天然冲突——框外节点连到框内,转折点必然落在框的左沿,触发 `container-border-run`。`fromSide/toSide`、`route:straight`、挪坐标都试过无效,最后只能删掉 boundary。要用就让连线两端都在框内或都在框外。
+
+**边界**:图本身是交付物(架构评审、给外部看的系统地图)才值得花这个成本;改动汇报里的配图(图是配角)还用 mermaid,写完就渲。
+
+### 多张 archify 图合并成一页(tab)
+
+archify 每张图产出 ~620KB 独立 HTML,**且带 3 处 Google Fonts 外链——违反本 skill 的单文件硬约束**(COEP 会拦掉)。合并成 tab 页同时解决体积和外链:
+
+```bash
+python3 ~/.claude/skills/html-mockup/assets/archify-tabs.py <out.html> \
+  流程图=a.html 状态机=b.html 时序图=c.html 架构图=d.html
+```
+
+实测四张图 **2477KB → 240KB(-90%)、外链归零**。能压这么多是因为同版本 archify 产出的那 177KB CSS **逐字节相同**,只留一份即可,所有图共用 `c-backend` / `a-emphasis` 命名空间。
+
+> ⚠️ **必须给 id 加前缀,否则箭头全废。**各图 SVG 里都有同名 id(`arrowhead`、`arrowhead-dashed`、`archify-diagram-title` …),直接摞会互相覆盖。脚本已处理:加 `d0-`/`d1-` 前缀,并同步改写 `url(#…)`、`href="#…"`、`aria-labelledby`。收尾自检:每张图应各有 4 个 `<marker>`,且没有裸 `url(#` 引用。
+
+**装 archify**(零 npm 依赖,Node ≥18):
+
+```bash
+git clone --depth 1 --filter=blob:none --sparse https://github.com/tt-a1i/archify.git
+cd archify && git sparse-checkout set archify && cd archify
+node bin/archify.mjs doctor
+```
+
+只取 `archify/` 子目录——整仓 83MB 大半是 gallery 资产,skill 本体只要 9.2MB。
+
 ### 颜色是有意义的,别乱用
 
 | 用法 | 颜色 |

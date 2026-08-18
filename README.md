@@ -100,6 +100,7 @@ assets/
   render-mermaid.py          把 mermaid 源码卡渲成内联 SVG
   check-overflow.py          多视口检测横向溢出（元素撑破整页，页面上看不出来）
   align-page.py              把已有页面对齐到当前模板（字号阶梯 + 布局兜底 CSS）
+  archify-tabs.py            把多份 archify 产物合并成一个 tab 页（单文件、零外链）
 ```
 
 ### 几条硬约束
@@ -159,6 +160,22 @@ python3 assets/align-page.py page.html [more.html ...]
 - **内联 SVG 一律跳过并断言前后一致** —— mermaid 的节点框尺寸是渲染那一刻烤死的，字号一改文字就顶出框被裁
 
 跑完接着跑 `check-overflow.py`：字号变大会把并排双栏、宽表撑得更宽。
+
+---
+
+## archify-tabs.py
+
+可选。[archify](https://github.com/tt-a1i/archify) 是另一个专做架构图的 Agent Skill，视觉水准更高，但**每张图产出 ~620KB 独立 HTML 且带 Google Fonts 外链** —— 违反本 skill 的单文件约束。
+
+```bash
+python3 assets/archify-tabs.py out.html 流程图=a.html 状态机=b.html 时序图=c.html
+```
+
+- **实测四张图 2477KB → 240KB（−90%），外链归零** —— 同版本 archify 的 177KB CSS 逐字节相同，只留一份即可
+- **自动给各图 SVG 的 id 加前缀** —— 不加的话 `arrowhead` 等同名 id 互相覆盖，**箭头会全部失效**
+- 标签可显式指定，也可自动取图自己的标题
+
+什么时候值得用 archify、四种图型的实测成本、以及 `boundary` 的已知坑，见 `SKILL.md` §7。
 
 ---
 
