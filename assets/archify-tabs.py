@@ -99,6 +99,43 @@ def extract_sources(src: str):
         return {}
 
 
+NODE_G_RE = re.compile(r'<g id="([\w-]*node-([\w-]+))"')
+
+
+def link_nodes(svg: str, srcmap: dict, pre: str) -> str:
+    """把带 sources 的节点 <g> 包进 <a> —— 合并时丢掉了 archify 的 viewer JS，
+    节点本来就点不动了；用原生 SVG 链接把「点节点开代码」补回来。"""
+    if not srcmap:
+        return svg
+    # 倒序处理：循环里会改 svg，正序的话第一次插入后后面的偏移量全错位
+    for m in reversed(list(NODE_G_RE.finditer(svg))):
+        full, node = m.group(1), m.group(2)
+        items = srcmap.get(node)
+        if not items or not items[0].get("href"):
+            continue
+        # 找到这个 <g> 的配对 </g>
+        start = m.start()
+        i, depth = start, 0
+        while i < len(svg):
+            if svg.startswith("<g", i):
+                depth += 1
+            elif svg.startswith("</g>", i):
+                depth -= 1
+                if depth == 0:
+                    end = i + 4
+                    break
+            i += 1
+        else:
+            continue
+        href = _html.escape(items[0]["href"])
+        tip = _html.escape(f'{items[0]["path"]}:{items[0]["line"]}')
+        svg = (svg[:start]
+               + f'<a href="{href}" target="_blank" rel="noopener" style="cursor:pointer">'
+               + f"<title>{tip}</title>" + svg[start:end] + "</a>"
+               + svg[end:])
+    return svg
+
+
 def render_sources(srcmap):
     """渲染成明文链接列表。URL 完整写出来,不藏在链接文字后面。"""
     if not srcmap:
@@ -111,9 +148,11 @@ def render_sources(srcmap):
                 loc += f"-{it['end_line']}"
             href = it.get("href", "")
             lab = _html.escape(it.get("label", ""))
+            u = _html.escape(href)
             rows.append(f"<li><code>{_html.escape(loc)}</code>"
                         f"{' — ' + lab if lab else ''}<br>"
-                        f"<span class=\"u\">{_html.escape(href)}</span></li>")
+                        # 明文写出完整 URL，同时可点 —— 两者不冲突
+                        f'<a class="u" href="{u}" target="_blank" rel="noopener">{u}</a></li>')
     return ('<details class="srcs"><summary>源码引用 '
             f'{len(rows)} 条（链接锁死 revision，私有仓库对外部人是 404）</summary>'
             f'<ul>{"".join(rows)}</ul></details>')
@@ -147,7 +186,7 @@ def main(argv):
             path, label = label, ""
         svg, css, title, srcmap = load(path)
         css_set.append(css)
-        svgs.append(prefix_ids(svg, f"d{i}-"))
+        svgs.append(link_nodes(prefix_ids(svg, f"d{i}-"), srcmap, f"d{i}-"))
         name = _html.escape(label or title)
         on = " on" if i == 0 else ""
         tabs.append(f'<button class="tb{on}" data-i="{i}">{name}</button>')
@@ -176,16 +215,19 @@ def main(argv):
         f"<script>{TAB_JS}</script></body></html>"
     )
 
-    ext = re.findall(r'(?:href|src)="https?://', out)
+    # 单文件约束管的是**资源加载**（CSS/字体/图片会被 COEP 拦），
+    # <a href> 是导航链接，不算违反 —— 别把这两者混为一谈
+    ext = re.findall(r'<(?:link|script|img|iframe)\b[^>]*(?:href|src)="https?://', out)
+    nav = len(re.findall(r'<a\b[^>]*href="https?://', out))
     if ext:
-        print(f"  ! 产物仍有 {len(ext)} 处外链，违反单文件约束", file=sys.stderr)
+        print(f"  ! 产物有 {len(ext)} 处**外部资源**引用，违反单文件约束", file=sys.stderr)
 
     d = os.path.dirname(os.path.abspath(out_path))
     os.makedirs(d, exist_ok=True)
     open(out_path, "w", encoding="utf-8").write(out)
     total = sum(os.path.getsize(i.partition("=")[2] or i.partition("=")[0]) for i in items)
     print(f"  {os.path.basename(out_path)}: {len(items)} 张图  "
-          f"{total // 1024}KB -> {len(out) // 1024}KB  外链 {len(ext)} 处")
+          f"{total // 1024}KB -> {len(out) // 1024}KB  外部资源 {len(ext)} 处  源码链接 {nav} 条")
 
 
 if __name__ == "__main__":
