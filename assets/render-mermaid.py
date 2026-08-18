@@ -237,12 +237,14 @@ def process(path, force=False):
     out = PH_RE.sub(lambda m: blobs[int(m.group(1))], out)
     if done or refit:
         # 只替换我们自己那个 <style>，绝不碰页面原有的 CSS
+        # CSS_ADD 自带结尾换行，插入时别再补 —— 补了首次注入是两个换行、
+        # 后续替换只剩一个，第二遍跑就会少掉一行（不幂等，且不报错）
         if STYLE_RE.search(out):
-            out = STYLE_RE.sub(lambda _: CSS_ADD, out, count=1)
+            out = STYLE_RE.sub(lambda _: CSS_ADD.rstrip("\n"), out, count=1)
         elif "</head>" in out:
-            out = out.replace("</head>", CSS_ADD + "\n</head>", 1)
+            out = out.replace("</head>", CSS_ADD.rstrip("\n") + "\n</head>", 1)
         else:
-            out = CSS_ADD + "\n" + out
+            out = CSS_ADD.rstrip("\n") + "\n" + out
         open(path, "w", encoding="utf-8").write(out)
     return done, refit, skipped
 

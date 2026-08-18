@@ -360,6 +360,7 @@ npx --no-install mmdc --version || npm i -g @mermaid-js/mermaid-cli   # 需要 g
 | mermaid 源码里的 `<br/>` 直接写进 `<pre>` | 浏览器把它当成真的换行标签渲染掉,读者复制走的源码**缺了 `<br/>`**,贴到 issue 里节点不换行 | 写成 `&lt;br/&gt;`。收尾用 HTMLParser 扫一遍,`</br> 栈顶是 <pre>` 这类报错就是它 |
 | 循环里改字符串,却用循环前算好的偏移量 | 第一次插入后,后面所有 `match.start()` 全错位 —— 实测只处理了 5 个中的 2 个,**而且不报错** | **倒序处理**(`reversed(list(re.finditer(...)))`),earlier 偏移量才不受影响 |
 | 把 `<a href="https://…">` 也算成「违反单文件约束」 | 自检误报。单文件约束管的是**资源加载**(CSS/字体/图片会被 COEP 拦),`<a href>` 是**导航**,两回事 | 检查只匹配 `<link>/<script>/<img>/<iframe>` 的 `href`/`src` |
+| 拼接时既用了自带结尾换行的常量,又手动补 `"\n"` | 首次注入是两个换行、后续替换只剩一个 —— **第二遍跑就少一行,不幂等且不报错**。实测 `render-mermaid.py` 这么错过 | 常量统一 `.rstrip("\n")` 后再拼;**幂等性要连跑三遍比 md5**,跑一遍看不出来 |
 | 工具把自己的 CSS 塞进页面已有的 `<style>`,再用「标记 → `</style>`」范围替换来更新 | **把标记之后、`</style>` 之前的用户 CSS 全吃掉** —— 页面看着正常,只是布局悄悄退回旧样子 | 工具的产物**独占一个容器**(自己的 `<style data-xxx>` / 自己的文件 / 成对哨兵),整块替换 |
 | 拿输出文件名或工具产物的 `<title>` 当标题 | 输出叫 `index.html` 时标题就成了「index」;工具的 `<title>` 常带自己的尾巴 | 文件名是 `index` 时退回**目录名**,或显式传标题;已知尾缀剥掉 |
 | **用 XML 解析器(`ElementTree`)验含内联 SVG 的页面** | 报 `not well-formed (invalid token)` —— 但页面完全正常。archify 之类的工具会输出**无值布尔属性**(`<text data-detail-anchor x=…>`),HTML5 合法、XML 不合法 | **含内联 SVG 的页面不能用 XML 解析器验。**用 HTMLParser(见下条)或直接浏览器测量。这已是同类假报错第三次:`</path> 栈顶 <marker>`、`scrollWidth > foreignObject width`、本条 |
