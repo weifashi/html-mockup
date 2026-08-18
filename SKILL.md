@@ -305,7 +305,10 @@ python3 ~/.claude/skills/html-mockup/assets/archify-tabs.py <out.html> \
 
 > ⚠️ **它不内嵌代码,只生成 blob 链接**(`…/blob/<revision>/<path>#L29`)。实测:`factory.go:29` 的真实内容在产物里搜不到。所以**私有仓库对外部人是 404**,给 PM 看的图要么别挂 sources,要么先说明。
 >
-> ⚠️ **合并成 tab 页会丢掉这份数据** —— 它存在页面 JS 里,而 `archify-tabs.py` 只抠 `<svg>` + `<style>`。脚本已补救:把它捞出来渲染成**明文链接列表**折叠在图下面(明文而非 `[文字](url)`,见 §5「交付话术」)。
+> ⚠️ **合并成 tab 页会丢掉这份数据** —— 它存在页面 JS 里,而 `archify-tabs.py` 只抠 `<svg>` + `<style>`(那正是 620KB→210KB、外链归零的原因)。脚本已补救,**不依赖 archify 的 viewer JS**,改用原生 SVG 链接:
+>
+> - 带 `sources` 的节点 `<g>` 包进 `<a href>` + `<title>` 悬停提示 —— **点节点直接跳 GitHub 那一行**
+> - 图下面折叠一份源码列表,URL **明文完整写出来且可点**(明文和可点不冲突,见 §5「交付话术」)
 
 > ⚠️ **必须给 id 加前缀,否则箭头全废。**各图 SVG 里都有同名 id(`arrowhead`、`arrowhead-dashed`、`archify-diagram-title` …),直接摞会互相覆盖。脚本已处理:加 `d0-`/`d1-` 前缀,并同步改写 `url(#…)`、`href="#…"`、`aria-labelledby`。收尾自检:每张图应各有 4 个 `<marker>`,且没有裸 `url(#` 引用。
 
@@ -414,6 +417,8 @@ npx --no-install mmdc --version || npm i -g @mermaid-js/mermaid-cli   # 需要 g
 | 工具往页面已有的 `<style>` 里塞 CSS,再用「标记 → `</style>`」范围替换来更新 | **会把标记之后、`</style>` 之前的所有 CSS 一起吃掉**。`render-mermaid.py` 早期就是这么写的,实测吃掉过一整段刚加的 `.bleed` 规则 —— 页面看着正常,只是某个布局悄悄退回旧样子 | 工具的 CSS 放**自己独立的 `<style data-xxx>`**,更新时整块替换。不跟别人的 CSS 混在一个块里 |
 | mermaid 只贴源码卡、不跑渲染器 | **手机上就是一坨代码,读者根本看不到图** —— 这是实际翻过的车 | 收尾必跑 `render-mermaid.py`;`grep -c '<svg'` 数量对得上 `.mmd` 卡片数才算完 |
 | 宽图(viewBox > 900px)让它 `width:100%` 缩进容器 | 塞进 390px 手机屏 = 缩到 13%,字比蚂蚁还小,等于没画 | 渲染器已自动分档:宽图保原尺寸 + 横向滚动。**别手工把 `.mmd wide` 改回 `fit`** |
+| 循环里改字符串,却用循环前算好的偏移量 | 第一次插入后,后面所有 `match.start()` 全错位 —— 实测只处理了 5 个中的 2 个,**而且不报错** | **倒序处理**(`reversed(list(re.finditer(...)))`),earlier 偏移量才不受影响 |
+| 把 `<a href="https://…">` 也算成「违反单文件约束」 | 自检误报。单文件约束管的是**资源加载**(CSS/字体/图片会被 COEP 拦),`<a href>` 是**导航**,两回事 | 检查只匹配 `<link>/<script>/<img>/<iframe>` 的 `href`/`src` |
 | **用 XML 解析器(`ElementTree`)验含内联 SVG 的页面** | 报 `not well-formed (invalid token)` —— 但页面完全正常。archify 之类的工具会输出**无值布尔属性**(`<text data-detail-anchor x=…>`),HTML5 合法、XML 不合法 | **含内联 SVG 的页面不能用 XML 解析器验。**用 HTMLParser(见下条)或直接浏览器测量。这已是同类假报错第三次:`</path> 栈顶 <marker>`、`scrollWidth > foreignObject width`、本条 |
 | 合并多份工具产物时不给 `<button>` 写 `color:inherit` | **深色主题下 tab 文字是黑字,几乎看不见** —— `<button>` 默认不继承父级 `color`,用的是浏览器默认色 | 凡是 `background:none;border:0` 的按钮,**必须显式 `color:inherit`** |
 | 拿输出文件名当页面标题 | 输出叫 `index.html` 时,标题就成了「index」 | 文件名是 `index`/`default` 时退回**目录名**;或显式传 `--title=` |
