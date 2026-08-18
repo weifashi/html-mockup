@@ -179,6 +179,28 @@ python3 assets/archify-tabs.py out.html 流程图=a.html 状态机=b.html 时序
 
 ---
 
+## 两个镜像仓库
+
+同一份内容发布在两处，**内容完全一致，都不是 fork**：
+
+```
+https://github.com/weifashi/html-mockup
+https://github.com/ZonEaseTech/html-mockup
+```
+
+维护者注意：两边是**各自独立**的仓库，**只推一边会悄悄分叉，页面上看不出来**。发布时两个都推：
+
+```bash
+git push origin main && git push zonease main
+
+# 核对两边一致（匿名即可，不需要 token）
+for r in weifashi/html-mockup ZonEaseTech/html-mockup; do
+  curl -s "https://api.github.com/repos/$r/commits/main" | grep -o '"sha": *"[0-9a-f]\{7\}' | head -1
+done
+```
+
+---
+
 ## License
 
 MIT
