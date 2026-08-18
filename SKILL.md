@@ -293,6 +293,20 @@ python3 ~/.claude/skills/html-mockup/assets/archify-tabs.py <out.html> \
 
 实测四张图 **2477KB → 240KB(-90%)、外链归零**。能压这么多是因为同版本 archify 产出的那 177KB CSS **逐字节相同**,只留一份即可,所有图共用 `c-backend` / `a-emphasis` 命名空间。
 
+**想让节点能点开看代码**,JSON 里要同时有两样,缺一不可:
+
+```jsonc
+"meta": { "repository": { "url": "https://github.com/<org>/<repo>", "revision": "<完整 sha>" } }
+// 每个 component / state:
+"sources": [ { "path": "main/pkg/storage/factory.go", "line": 29, "end_line": 50, "label": "读 STORAGE_DRIVER" } ]
+```
+
+**行号必须 `grep` 出来,不许编。**不存在的文件(比如「本次新增」还没写的)就别挂,挂了是死链。渲染时带 `--repo-root <仓库路径>` 校验路径存在。
+
+> ⚠️ **它不内嵌代码,只生成 blob 链接**(`…/blob/<revision>/<path>#L29`)。实测:`factory.go:29` 的真实内容在产物里搜不到。所以**私有仓库对外部人是 404**,给 PM 看的图要么别挂 sources,要么先说明。
+>
+> ⚠️ **合并成 tab 页会丢掉这份数据** —— 它存在页面 JS 里,而 `archify-tabs.py` 只抠 `<svg>` + `<style>`。脚本已补救:把它捞出来渲染成**明文链接列表**折叠在图下面(明文而非 `[文字](url)`,见 §5「交付话术」)。
+
 > ⚠️ **必须给 id 加前缀,否则箭头全废。**各图 SVG 里都有同名 id(`arrowhead`、`arrowhead-dashed`、`archify-diagram-title` …),直接摞会互相覆盖。脚本已处理:加 `d0-`/`d1-` 前缀,并同步改写 `url(#…)`、`href="#…"`、`aria-labelledby`。收尾自检:每张图应各有 4 个 `<marker>`,且没有裸 `url(#` 引用。
 
 **不预装,要用那次现拉**(零 npm 依赖,Node ≥18,约几十秒)。整仓 83MB 大半是 gallery 的图片和 GIF,只取 `archify/` 子目录 9.2MB:

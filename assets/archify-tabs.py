@@ -13,6 +13,13 @@
   c-backend / a-emphasis 这套 class 命名空间。所以只留一份 CSS + N 个
   内联 SVG，实测 2474KB -> 240KB（-90%），外链归零。
 
+源码引用:
+  archify 的「点开看代码」把 {path,line,href} 存在页面 JS 里，本脚本只抠
+  <svg> + <style>，那份数据会连同外壳一起丢掉。所以额外把它捞出来，渲染成
+  **明文链接列表**放在图下面 —— 既保住信息，又符合「永远把完整 URL 明文
+  写出来」（藏在链接文字后面没法复制、没法转发）。
+  注意 href 指向的是 repo 的 blob 链接，**私有仓库对外部人是 404**。
+
 必须处理的坑:
   各图 SVG 里有同名 id（arrowhead / arrowhead-dashed / archify-diagram-title …），
   直接摞会互相覆盖 —— **箭头会全部失效**。本脚本给每张图的 id 加 d0-/d1- 前缀，
@@ -24,6 +31,7 @@ import re
 import sys
 
 SVG_RE = re.compile(r"<svg\b.*?</svg>", re.S)
+SRC_HINT = re.compile(r'"[\w-]+"\s*:\s*\[\s*\{\s*"path"')
 STYLE_RE = re.compile(r"<style[^>]*>(.*?)</style>", re.S)
 TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.S)
 ID_RE = re.compile(r'\sid="([^"]+)"')
@@ -42,6 +50,11 @@ TAB_CSS = """
 .pane.on{display:block}
 .pane .cap{font-size:15px;margin:0 0 12px;opacity:.75}
 .pane svg{max-width:100%;height:auto}
+.srcs{margin-top:14px;font-size:14px}
+.srcs summary{cursor:pointer;opacity:.75;padding:4px 0}
+.srcs ul{margin:8px 0 0;padding-left:20px;line-height:1.9}
+.srcs li{margin-bottom:6px}
+.srcs .u{font-size:12.5px;opacity:.6;word-break:break-all}
 """
 
 TAB_JS = (
@@ -64,6 +77,48 @@ def prefix_ids(svg: str, pre: str) -> str:
     return svg
 
 
+def extract_sources(src: str):
+    """把 archify 存在页面 JS 里的 {节点: [{path,line,href}]} 捞出来。"""
+    m = SRC_HINT.search(src)
+    if not m:
+        return {}
+    start = src.rfind("{", 0, m.start())
+    depth, i = 0, start
+    while i < len(src):
+        if src[i] == "{":
+            depth += 1
+        elif src[i] == "}":
+            depth -= 1
+            if depth == 0:
+                break
+        i += 1
+    try:
+        import json
+        return json.loads(src[start:i + 1])
+    except Exception:
+        return {}
+
+
+def render_sources(srcmap):
+    """渲染成明文链接列表。URL 完整写出来,不藏在链接文字后面。"""
+    if not srcmap:
+        return ""
+    rows = []
+    for node, items in srcmap.items():
+        for it in items:
+            loc = f"{it['path']}:{it['line']}"
+            if it.get("end_line"):
+                loc += f"-{it['end_line']}"
+            href = it.get("href", "")
+            lab = _html.escape(it.get("label", ""))
+            rows.append(f"<li><code>{_html.escape(loc)}</code>"
+                        f"{' — ' + lab if lab else ''}<br>"
+                        f"<span class=\"u\">{_html.escape(href)}</span></li>")
+    return ('<details class="srcs"><summary>源码引用 '
+            f'{len(rows)} 条（链接锁死 revision，私有仓库对外部人是 404）</summary>'
+            f'<ul>{"".join(rows)}</ul></details>')
+
+
 def load(path: str):
     src = open(path, encoding="utf-8").read()
     m = SVG_RE.search(src)
@@ -73,7 +128,7 @@ def load(path: str):
     t = TITLE_RE.search(src)
     title = re.sub(r"\s+", " ", t.group(1)).strip() if t else os.path.basename(path)
     title = re.sub(r"\s*Diagram$", "", title)
-    return m.group(0), css, title
+    return m.group(0), css, title, extract_sources(src)
 
 
 def main(argv):
@@ -90,14 +145,15 @@ def main(argv):
         label, _, path = item.partition("=")
         if not path:
             path, label = label, ""
-        svg, css, title = load(path)
+        svg, css, title, srcmap = load(path)
         css_set.append(css)
         svgs.append(prefix_ids(svg, f"d{i}-"))
         name = _html.escape(label or title)
         on = " on" if i == 0 else ""
         tabs.append(f'<button class="tb{on}" data-i="{i}">{name}</button>')
         panes.append(f'<section class="pane{on}" data-i="{i}">'
-                     f'<p class="cap">{_html.escape(title)}</p>{svgs[-1]}</section>')
+                     f'<p class="cap">{_html.escape(title)}</p>{svgs[-1]}'
+                     f'{render_sources(srcmap)}</section>')
 
     uniq = {c for c in css_set}
     if len(uniq) > 1:
