@@ -295,15 +295,19 @@ python3 ~/.claude/skills/html-mockup/assets/archify-tabs.py <out.html> \
 
 > ⚠️ **必须给 id 加前缀,否则箭头全废。**各图 SVG 里都有同名 id(`arrowhead`、`arrowhead-dashed`、`archify-diagram-title` …),直接摞会互相覆盖。脚本已处理:加 `d0-`/`d1-` 前缀,并同步改写 `url(#…)`、`href="#…"`、`aria-labelledby`。收尾自检:每张图应各有 4 个 `<marker>`,且没有裸 `url(#` 引用。
 
-**装 archify**(零 npm 依赖,Node ≥18):
+**不预装,要用那次现拉**(零 npm 依赖,Node ≥18,约几十秒)。整仓 83MB 大半是 gallery 的图片和 GIF,只取 `archify/` 子目录 9.2MB:
 
 ```bash
-git clone --depth 1 --filter=blob:none --sparse https://github.com/tt-a1i/archify.git
-cd archify && git sparse-checkout set archify && cd archify
-node bin/archify.mjs doctor
+A=/tmp/archify && rm -rf $A && \
+git clone -q --depth 1 --filter=blob:none --sparse \
+  https://github.com/tt-a1i/archify.git $A && \
+git -C $A sparse-checkout set archify && \
+node $A/archify/bin/archify.mjs doctor    # 全绿才往下走
 ```
 
-只取 `archify/` 子目录——整仓 83MB 大半是 gallery 资产,skill 本体只要 9.2MB。
+之后一律用 `node $A/archify/bin/archify.mjs <子命令>`,用完 `rm -rf $A`。
+
+**别预装在四台机器上**:按上表的边界,只有「图本身是交付物」才用得着,一年没几次;而且**产物是自包含单文件,看图的人和跑 `archify-tabs.py` 的人都不需要装**——那个脚本只读产物 HTML,依赖全是 Python 标准库。
 
 ### 颜色是有意义的,别乱用
 
