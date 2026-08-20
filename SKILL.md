@@ -63,7 +63,7 @@ bash ~/.claude/skills/html-mockup/assets/bootstrap.sh
 
 - **单文件、零外部依赖**。不引 CDN、不引 Google Fonts、不外链图片、不引 mermaid.js。端口转发带 `Cross-Origin-Embedder-Policy: require-corp`,跨源资源会被浏览器直接拦掉;国内网络加载 CDN 也会白屏。字体一律用系统字体栈(模板里已有),图标用 Unicode 字符(✓ ✕ › ▼ ☑ ⓘ ↻ ① ★)。
 - **静态,不写交互**。这是给人看的说明书,不是能点的 app。要能点就得写真代码。
-- **原型目录不入 git**。原型是**孤本**:重要的原型要把各界面的文字描述落到 `docs/reviews/<issue号>-<slug>/prototypes.md`;模式 B 的改动汇报要同时落一份 Markdown(见 §6)。
+- **原型目录不入 git**。原型是**孤本**:重要的原型要把各界面的文字描述落到 `docs/reviews/<issue号>-<slug>/prototypes.md`。
 - **产物形态是 `preview_html` 与 8008 二选一**,判定见 §4.5。默认 `preview_html`,只在它结构上做不到时才走 8008。
 
 ## 4.5 产物形态:`preview_html` 还是 8008(自动二选一)
@@ -198,7 +198,6 @@ python3 ~/.claude/skills/html-mockup/assets/align-page.py <目录>/index.html
    用户侧真的无感知时,明确写一句「用户无感知,仅 xxx 变化」,**不要跳过这一节**。
    **Why**:只写"改了 xxx 函数的判断条件",读者无法验收、测试无法复现;落到页面和操作,PM 能验、测试能复现,你自己也会发现"这个改动用户其实碰不到"。
 6. **图的分工**:结构和清单用 **ASCII**(见 §7),状态流转和调用链用 **mermaid 黑底**(见 §7),界面变化用积木库的双栏对照。
-7. **同时交两份**:8008 上的 HTML 一页(给人看)+ `docs/reviews/<slug>/change-report.md`(给 git 留底)。HTML 会丢,Markdown 不会。
 
 ## 7. 视觉规范
 

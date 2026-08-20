@@ -2,10 +2,7 @@
 
 把一次任务的全部代码改动,变成一页任何人都看得懂的东西:**改了什么 · 动了哪些表字段 · 改了哪些原有业务规则 · 影响哪些业务点 · 出事怎么回滚。**
 
-产出两份,缺一不可:
-
-- `<BASE_URL><slug>_changes/?v=N` —— HTML 一页,给人看
-- `docs/reviews/<slug>/change-report.md` —— 同样内容的 Markdown,给 git 留底(HTML 会丢)
+产出一份:`<BASE_URL><slug>_changes/?v=N` —— HTML 一页,给人看。
 
 ---
 
@@ -98,7 +95,7 @@ L6 风险:
 - **代理主动纠正你的用词就采纳它。**prompt 里的业务命名可能是错的(实战里把外送/外卖写反过),代理去代码里核过表名和注释,以它的为准。
 - 交叉验证是免费的置信度:同一条问题被两三条线**独立**定位到同一行,报告里点出来,读者知道这不是单点臆测。
 
-## 2. 九节骨架(HTML 和 Markdown 同构)
+## 2. 九节骨架
 
 **先把正文栏切到报告档。**改动汇报的主体是规则卡 + 表与字段 + 并排双栏,不是散文,900px 装不下,而且紧邻的 `.bleed`(1440px)会形成一倍宽的断层:
 
@@ -223,9 +220,9 @@ grep -c '<svg' ~/www/<页面>/index.html      # 要等于 .mmd 卡片数
 ## 4. 收尾自检(五条都过才能说「完成」)
 
 ```bash
-# 1. 覆盖率:底账文件数 == 报告覆盖数
+# 1. 覆盖率:底账文件数 == 报告覆盖数（直接扫产出的 HTML）
 wc -l < /tmp/cr_ledger.txt
-rg -o '^\| *`?([^ |`]+\.(go|dart|php|ts|tsx|sql|json|yaml|yml))`?' -r '$1' docs/reviews/<slug>/change-report.md | sort -u | wc -l
+grep -oE '[A-Za-z0-9_./-]+\.(go|dart|php|ts|tsx|sql|json|yaml|yml|conf|vue)\b' <目录>/index.html | sort -u | wc -l
 ```
 
 2. **规则闭环**:每条规则卡都有原规则和新规则的**真实代码行引用**(file:line),不是描述。
@@ -245,5 +242,4 @@ rg -o '^\| *`?([^ |`]+\.(go|dart|php|ts|tsx|sql|json|yaml|yml))`?' -r '$1' docs/
    一句话:<S0 的结论>
    动了 N 个文件 / M 张表 / K 条业务规则,其中高风险 X 条(S4 红字)
    回滚步骤在最后一节
-   留底:docs/reviews/<slug>/change-report.md
 ```
