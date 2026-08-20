@@ -63,7 +63,7 @@ bash ~/.claude/skills/html-mockup/assets/bootstrap.sh
 
 - **单文件、零外部依赖**。不引 CDN、不引 Google Fonts、不外链图片、不引 mermaid.js。端口转发带 `Cross-Origin-Embedder-Policy: require-corp`,跨源资源会被浏览器直接拦掉;国内网络加载 CDN 也会白屏。字体一律用系统字体栈(模板里已有),图标用 Unicode 字符(✓ ✕ › ▼ ☑ ⓘ ↻ ① ★)。
 - **静态,不写交互**。这是给人看的说明书,不是能点的 app。要能点就得写真代码。
-- **原型目录不入 git**。原型是**孤本**:重要的原型要把各界面的文字描述落到 `docs/reviews/<issue号>-<slug>/prototypes.md`。
+- **原型目录不入 git,是孤本**。机器重装、目录清理就没了 —— 需要长期留存的结论,写进 issue / PR / 知识库,别指望原型本身。
 - **产物形态是 `preview_html` 与 8008 二选一**,判定见 §4.5。默认 `preview_html`,只在它结构上做不到时才走 8008。
 
 ## 4.5 产物形态:`preview_html` 还是 8008(自动二选一)
@@ -176,9 +176,6 @@ python3 ~/.claude/skills/html-mockup/assets/align-page.py <目录>/index.html
 
 别嵌 iframe、别用 `preview_html` 再包一层。锚点也直接写进 URL:`...?v=3#s4`。
 
-### A6. 落盘(评审类需求)
-
-在 `docs/reviews/<issue号>-<slug>/prototypes.md` 记:原型地址、几个界面各是什么、**原型与 issue 正文对不上的地方**(这些是要对方拍板的)。原型会丢,这份文字不会。
 
 ## 6. 模式 B:改动汇报
 
